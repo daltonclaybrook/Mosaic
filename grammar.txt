@@ -1,0 +1,44 @@
+sourceFile      → statement* ;
+
+statement       → varDecl
+                | exprStmt
+                | eachStmt
+                | ifStmt
+                | whileStmt ;
+
+varDecl         → ( "var" | "const" ) identifier ( ":" identifier )? ( "=" expression )? stmtEnd ;
+
+exprStmt        → expression stmtEnd ;
+
+eachStmt        → "each" identifier "in" expression block ;
+
+expression      → assignment ;
+assignment      → identifier "=" assignment
+                | logicOr ;
+logicOr         → logicAnd ( "||" logicAnd )* ;
+logicAnd        → equality ( "&&" equality )* ;
+equality        → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison      → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term            → factor ( ( "-" | "+" ) factor )* ;
+factor          → unary ( ( "/" | "*" ) unary )* ;
+unary           → ( "!" | "-" ) unary
+                | primary ;
+primary         → "true" | "false" | "nil"
+                | number | string
+                | "(" expression ")"
+                | identifier ;
+
+block           → "{" statement* "}" ;
+
+identifier      → identifierHead identifierChar* ;
+identifierHead  → [a-zA-Z_] ;
+identifierChar  → ( identifierHead | digit ) ;
+
+number          → digit+ ( "." digit+ )? ;
+digit           → [0-9] ;
+
+string          → "\"" stringChar* "\"" ;
+stringChar      → ASCII character ;
+
+stmtEnd         → "\n" | scopeEnd ;
+scopeEnd        → The end of a block or source file
