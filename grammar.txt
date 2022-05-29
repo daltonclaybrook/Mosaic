@@ -6,14 +6,14 @@ statement       → varDecl
                 | ifStmt
                 | whileStmt ;
 
-varDecl         → ( "var" | "const" ) identifier ( ":" identifier )? ( "=" expression )? stmtEnd ;
-
+varDecl         → ( "var" | "const" ) simpleIdentifier ( ":" typeIdentifier )? ( "=" expression )? stmtEnd ;
 exprStmt        → expression stmtEnd ;
-
-eachStmt        → "each" identifier "in" expression block ;
+eachStmt        → "each" simpleIdentifier "in" expression block ;
+ifStmt          → "if" expression block ( "else" block )? ;
+whileStmt       → "while" expression block ;
 
 expression      → assignment ;
-assignment      → identifier "=" assignment
+assignment      → simpleIdentifier "=" assignment
                 | logicOr ;
 logicOr         → logicAnd ( "||" logicAnd )* ;
 logicAnd        → equality ( "&&" equality )* ;
@@ -23,22 +23,36 @@ term            → factor ( ( "-" | "+" ) factor )* ;
 factor          → unary ( ( "/" | "*" ) unary )* ;
 unary           → ( "!" | "-" ) unary
                 | primary ;
-primary         → "true" | "false" | "nil"
-                | number | string
+primary         → literal
+                | "nil"
                 | "(" expression ")"
-                | identifier ;
+                | simpleIdentifier ;
 
 block           → "{" statement* "}" ;
 
-identifier      → identifierHead identifierChar* ;
-identifierHead  → [a-zA-Z_] ;
-identifierChar  → ( identifierHead | digit ) ;
+simpleIdentifier    → identifierHead identifierChar* ;
+genericIdentifier   → simpleIdentifier ( "<" ( typeIdentifier | literal ) ">" ) ;
+typeIdentifier  → simpleIdentifier | genericIdentifier ;
 
-number          → digit+ ( "." digit+ )? ;
-digit           → [0-9] ;
+identifierHead  → [a-z] | [A-Z] | "_" ;
+identifierChar  → ( identifierHead | decimalDigit ) ;
 
-string          → "\"" stringChar* "\"" ;
+literal         → numberLiteral | stringLiteral | boolLiteral ;
+numberLiteral   → decimalLiteral | hexLiteral | binaryLiteral ;
+
+decimalLiteral  → decimalDigit+ ( "." decimalDigit+ )? ;
+decimalDigit    → [0-9] ;
+
+hexLiteral      → "0x" hexDigit+ ;
+hexDigit        → decimalDigit | [a-f] | [A-F] ;
+
+binaryLiteral   → "0b" binaryDigit+ ;
+binaryDigit     → "0" | "1" ;
+
+stringLiteral   → "\"" stringChar* "\"" ;
 stringChar      → ASCII character ;
+
+boolLiteral     → "true" | "false" ;
 
 stmtEnd         → "\n" | scopeEnd ;
 scopeEnd        → The end of a block or source file
