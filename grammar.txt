@@ -16,11 +16,15 @@ expression      → assignment ;
 assignment      → simpleIdentifier "=" assignment
                 | logicOr ;
 logicOr         → logicAnd ( "||" logicAnd )* ;
-logicAnd        → equality ( "&&" equality )* ;
+logicAnd        → bitwiseOr ( "&&" bitwiseOr )* ;
+bitwiseOr       → bitwiseXor ( "|" bitwiseXor )* ;
+bitwiseXor      → bitwiseAnd ( "^" bitwiseAnd )* ;
+bitwiseAnd      → equality ( "&" equality )* ;
 equality        → comparison ( ( "!=" | "==" ) comparison )* ;
-comparison      → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+comparison      → bitwiseShift ( ( ">" | ">=" | "<" | "<=" ) bitwiseShift )* ;
+bitwiseShift    → term ( ( "<<" | ">>" ) term )* ;
 term            → factor ( ( "-" | "+" ) factor )* ;
-factor          → unary ( ( "/" | "*" ) unary )* ;
+factor          → unary ( ( "/" | "*" | "%" ) unary )* ;
 unary           → ( "!" | "-" ) unary
                 | primary ;
 primary         → literal
