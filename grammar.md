@@ -1,7 +1,7 @@
 # Mosaic Grammar
 
 ```
-sourceFile      → declaration* EOF ;
+sourceFile      → inSourceDecl* EOF ;
 ```
 
 ## Declarations
@@ -12,13 +12,11 @@ inSourceDecl    → structDecl
                 | implDecl
                 | inStructDecl ;
 
-# Declarations that can appear inside a struct or impl
-inStructDecl    → funcDecl | varDecl ;
-
-structDecl      → "struct" simpleIdentifier ( "<" structGeneric ( "," structGeneric )* ">" ) ;
+structDecl      → "struct" simpleIdentifier ( "<" structGeneric ( "," structGeneric )* ">" ) structBlock ;
 structGeneric   → ( "'"? simpleIdentifier ( ":" simpleIdentifier )? ) ;
+structBlock     → "{" varDecl* "}" ;
 
-implDecl        → "impl" simpleIdentifier "{" declaration* "}" ;
+implDecl        → "impl" simpleIdentifier "{" funcDecl* "}" ;
 
 funcDecl        → "func" simpleIdentifier "(" parameters? ")" block ;
 funcParams      → funcParam ( "," funcParam )* ;
