@@ -34,11 +34,15 @@ statement       → varDecl
                 | exprStmt
                 | eachStmt
                 | ifStmt
+                | returnStmt
+                | breakStmt
                 | whileStmt ;
 
 exprStmt        → expression stmtEnd ;
 eachStmt        → "each" simpleIdentifier "in" expression block ;
 ifStmt          → "if" expression block ( "else" block )? ;
+returnStmt      → "return" expression? stmtEnd ;
+breakStmt       → "break" stmtEnd ;
 whileStmt       → "while" expression block ;
 
 block           → "{" statement* "}" ;
