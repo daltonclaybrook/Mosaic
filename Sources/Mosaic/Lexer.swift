@@ -130,7 +130,24 @@ public final class Lexer {
 	}
 
 	func scanStringLiteral(cursor: inout Cursor) {
+		// Start with the first quote since we've already scanned it
+		var lexeme = String(cursor.previous)
+		while !cursor.isAtEnd {
+			let next = cursor.advance()
+			guard !next.isNewline else {
+				emitError(.unterminatedString(lexeme))
+				return
+			}
 
+			lexeme.append(next)
+			if next == "\"" {
+				// String terminated with a closing quote
+				makeToken(type: .stringLiteral, lexeme: lexeme)
+				return
+			}
+		}
+		// Should have returned from inside the loop upon encountering a closing quote
+		emitError(.unterminatedString(lexeme))
 	}
 
 	func scanCommentLine(cursor: inout Cursor) {
