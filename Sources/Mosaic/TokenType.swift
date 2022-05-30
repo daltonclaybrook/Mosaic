@@ -49,3 +49,38 @@ public enum TokenType {
 	case keywordFalse
 	case keywordNil
 }
+
+extension TokenType {
+	static func keyword(for lexeme: String) -> TokenType? {
+		switch lexeme {
+		case "struct":
+			return .keywordStruct
+		case "impl":
+			return .keywordImpl
+		case "func":
+			return .keywordFunc
+		case "if":
+			return .keywordIf
+		case "else":
+			return .keywordElse
+		case "each":
+			return .keywordEach
+		case "in":
+			return .keywordIn
+		case "while":
+			return .keywordWhile
+		case "return":
+			return .keywordReturn
+		case "break":
+			return .keywordBreak
+		case "true":
+			return .keywordTrue
+		case "false":
+			return .keywordFalse
+		case "nil":
+			return .keywordNil
+		default:
+			return nil
+		}
+	}
+}

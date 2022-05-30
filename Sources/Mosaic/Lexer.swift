@@ -122,7 +122,7 @@ public final class Lexer {
 			} else if next.isNumber {
 				scanNumberLiteral(cursor: &cursor)
 			} else if next.isIdentifierHead {
-				scanIdentifierOrKeyword(cursour: &cursor)
+				scanIdentifierOrKeyword(cursor: &cursor)
 			} else if next.isWhitespace {
 				// Ignore whitespace (unless it's a newline, which is handled above)
 				break
@@ -190,7 +190,26 @@ public final class Lexer {
 		}
 	}
 
-	func scanIdentifierOrKeyword(cursour: inout Cursor) {
+	func scanIdentifierOrKeyword(cursor: inout Cursor) {
+		// First character of identifier has already been scanned
+		var lexeme = String(cursor.previous)
+		while !cursor.isAtEnd {
+			let next = cursor.peek()
+			if next.isIdentifierChar {
+				lexeme.append(cursor.advance())
+			} else if next.isWhitespace {
+				break
+			} else {
+				// Identifier must be terminated with whitespace character
+				emitError(.invalidIdentifier(lexeme))
+				return
+			}
+		}
 
+		if let keyword = TokenType.keyword(for: lexeme) {
+			makeToken(type: keyword, lexeme: lexeme)
+		} else {
+			makeToken(type: .identifier, lexeme: lexeme)
+		}
 	}
 }
