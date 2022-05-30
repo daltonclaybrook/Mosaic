@@ -1,5 +1,5 @@
 /// The various kinds of tokens that make up the Mosaic grammar
-enum TokenType {
+public enum TokenType {
 	// Symbols
 	case dot // '.'
 	case comma // ','
@@ -32,6 +32,7 @@ enum TokenType {
 	// Special
 	case identifier
 	case endOfFile
+	case newline
 
 	// Keywords
 	case keywordStruct
