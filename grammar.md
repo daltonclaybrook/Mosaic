@@ -7,26 +7,46 @@ sourceFile      → declaration* EOF ;
 ## Declarations
 
 ```
-declaration     → structDecl
+# Declarations that can appear at the root of a source file
+inSourceDecl    → structDecl
                 | implDecl
-                | funcDecl
-                | varDecl
-                | statement ;
+                | inStructDecl ;
 
-structDecl      → "struct" 
+# Declarations that can appear inside a struct or impl
+inStructDecl    → funcDecl | varDecl ;
 
+structDecl      → "struct" simpleIdentifier ( "<" structGeneric ( "," structGeneric )* ">" ) ;
+structGeneric   → ( "'"? simpleIdentifier ( ":" simpleIdentifier )? ) ;
+
+implDecl        → "impl" simpleIdentifier "{" declaration* "}" ;
+
+funcDecl        → "func" simpleIdentifier "(" parameters? ")" block ;
+funcParams      → funcParam ( "," funcParam )* ;
+funcParam       → simpleIdentifier ":" simpleIdentifier ;
+
+varDecl         → ( "var" | "const" ) simpleIdentifier ( ":" typeIdentifier )? ( "=" expression )? stmtEnd ;
+```
+
+## Statements
+
+```
 statement       → varDecl
                 | exprStmt
                 | eachStmt
                 | ifStmt
                 | whileStmt ;
 
-varDecl         → ( "var" | "const" ) simpleIdentifier ( ":" typeIdentifier )? ( "=" expression )? stmtEnd ;
 exprStmt        → expression stmtEnd ;
 eachStmt        → "each" simpleIdentifier "in" expression block ;
 ifStmt          → "if" expression block ( "else" block )? ;
 whileStmt       → "while" expression block ;
 
+block           → "{" statement* "}" ;
+```
+
+## Expressions
+
+```
 expression      → assignment ;
 assignment      → simpleIdentifier "=" assignment
                 | logicOr ;
@@ -46,9 +66,11 @@ primary         → literal
                 | "nil"
                 | "(" expression ")"
                 | simpleIdentifier ;
+```
 
-block           → "{" statement* "}" ;
+## Primitives
 
+```
 simpleIdentifier    → identifierHead identifierChar* ;
 genericIdentifier   → simpleIdentifier ( "<" ( typeIdentifier | literal ) ">" ) ;
 typeIdentifier  → simpleIdentifier | genericIdentifier ;
