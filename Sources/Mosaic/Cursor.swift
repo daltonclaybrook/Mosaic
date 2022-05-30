@@ -35,12 +35,18 @@ public struct Cursor {
 	}
 
 	/// If the next scanned character matches the provided character, advance the cursor and return
-	/// `true`. Otherwise, do not advance the scanner and return `false`.
+	/// `true`. Otherwise, do not advance the cursor and return `false`.
 	public mutating func match(next: Character) -> Bool {
+		match { $0 == next }
+	}
+
+	/// If the next scanned character passes the provided predicate closure, advance the cursor and return
+	/// `true`. Otherwise, do not advance the cursor and return `false`.
+	public mutating func match(_ predicate: (Character) -> Bool) -> Bool {
 		guard !isAtEnd else { return false }
 
 		let current = string[currentIndex]
-		guard current == next else { return false }
+		guard predicate(current) else { return false}
 
 		currentIndex = string.index(after: currentIndex)
 		advanceLineAndColumn(for: current)

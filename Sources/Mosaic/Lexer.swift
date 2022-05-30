@@ -123,6 +123,9 @@ public final class Lexer {
 				scanNumberLiteral(cursor: &cursor)
 			} else if next.isIdentifierHead {
 				scanIdentifierOrKeyword(cursour: &cursor)
+			} else if next.isWhitespace {
+				// Ignore whitespace (unless it's a newline, which is handled above)
+				break
 			} else {
 				emitError(.unrecognizedCharacter(next))
 			}
@@ -151,7 +154,9 @@ public final class Lexer {
 	}
 
 	func scanCommentLine(cursor: inout Cursor) {
-
+		while !cursor.isAtEnd && !cursor.match(\.isNewline) {
+			cursor.advance()
+		}
 	}
 
 	func scanNumberLiteral(cursor: inout Cursor) {
