@@ -31,6 +31,14 @@ final class LexerTests: XCTestCase {
 		XCTAssertEqual(results.errors, [])
 	}
 
+	func testNewlineIsScanned() {
+		let contents = "\n"
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		XCTAssertEqual(tokenTypes, [.newline, .endOfFile])
+		XCTAssertEqual(results.errors, [])
+	}
+
 	func testInvalidSymbolEmitsError() {
 		let contents = "$"
 		let results = subject.scanAllTokens(fileContents: contents)
@@ -84,5 +92,54 @@ final class LexerTests: XCTestCase {
 		let errors = results.errors.map(\.value)
 		XCTAssertEqual(tokenTypes, [.endOfFile])
 		XCTAssertEqual(errors, [.invalidNumberLiteral("12.")])
+	}
+
+	func testInvalidNumberEmitsError2() {
+		let contents = "12.34.5"
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		let errors = results.errors.map(\.value)
+		XCTAssertEqual(tokenTypes, [.integerLiteral, .endOfFile])
+		XCTAssertEqual(errors, [.invalidNumberLiteral("12.34.")])
+	}
+
+	func testKeywordsAreScanned() {
+		let contents = "struct impl func const var if else each in while return break true false nil"
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		let expectedKeywords: [TokenType] = [
+			.keywordStruct, .keywordImpl, .keywordFunc, .keywordConst,
+			.keywordVar, .keywordIf, .keywordElse, .keywordEach, .keywordIn,
+			.keywordWhile, .keywordReturn, .keywordBreak, .keywordTrue,
+			.keywordFalse, .keywordNil
+		]
+		XCTAssertEqual(tokenTypes, expectedKeywords + [.endOfFile])
+		// Ensure we've tested all keywords
+		let missingKeywords = TokenType.allKeywords.subtracting(expectedKeywords)
+		XCTAssertEqual(missingKeywords, [])
+		XCTAssertEqual(results.errors, [])
+	}
+
+	func testIdentifierIsScanned() {
+		let contents = "FooBar"
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		XCTAssertEqual(tokenTypes, [.identifier, .endOfFile])
+		XCTAssertEqual(results.errors, [])
+	}
+
+	func testCommentsAreIgnored() {
+		let contents = """
+		// This is a comment line
+		var foo = "abc"
+		// This is another
+		foo + 2
+		"""
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		XCTAssertEqual(tokenTypes, [
+			.keywordVar, .identifier, .equal, .stringLiteral, .newline,
+			.identifier, .plus, .integerLiteral, .endOfFile
+		])
 	}
 }

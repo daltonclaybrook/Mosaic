@@ -38,6 +38,8 @@ public enum TokenType: Equatable {
 	case keywordStruct
 	case keywordImpl
 	case keywordFunc
+	case keywordConst
+	case keywordVar
 	case keywordIf
 	case keywordElse
 	case keywordEach
@@ -51,36 +53,27 @@ public enum TokenType: Equatable {
 }
 
 extension TokenType {
+	static let tokenTypesFromKeyworkLexemes: [String: TokenType] = [
+		"struct": .keywordStruct,
+		"impl": .keywordImpl,
+		"func": .keywordFunc,
+		"const": .keywordConst,
+		"var": .keywordVar,
+		"if": .keywordIf,
+		"else": .keywordElse,
+		"each": .keywordEach,
+		"in": .keywordIn,
+		"while": .keywordWhile,
+		"return": .keywordReturn,
+		"break": .keywordBreak,
+		"true": .keywordTrue,
+		"false": .keywordFalse,
+		"nil": .keywordNil
+	]
+
+	static let allKeywords: Set<TokenType> = Set(tokenTypesFromKeyworkLexemes.values)
+
 	static func keyword(for lexeme: String) -> TokenType? {
-		switch lexeme {
-		case "struct":
-			return .keywordStruct
-		case "impl":
-			return .keywordImpl
-		case "func":
-			return .keywordFunc
-		case "if":
-			return .keywordIf
-		case "else":
-			return .keywordElse
-		case "each":
-			return .keywordEach
-		case "in":
-			return .keywordIn
-		case "while":
-			return .keywordWhile
-		case "return":
-			return .keywordReturn
-		case "break":
-			return .keywordBreak
-		case "true":
-			return .keywordTrue
-		case "false":
-			return .keywordFalse
-		case "nil":
-			return .keywordNil
-		default:
-			return nil
-		}
+		tokenTypesFromKeyworkLexemes[lexeme]
 	}
 }
