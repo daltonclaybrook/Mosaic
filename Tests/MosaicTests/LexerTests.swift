@@ -57,13 +57,22 @@ final class LexerTests: XCTestCase {
 		XCTAssertEqual(results.errors, [])
 	}
 
-	func testUnterminatedStringEmitsError() {
+	func testUnterminatedStringLiteralEmitsError() {
 		let contents = "\"Hello, world!"
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)
 		let errors = results.errors.map(\.value)
 		XCTAssertEqual(tokenTypes, [.endOfFile])
 		XCTAssertEqual(errors, [.unterminatedString(contents)])
+	}
+
+	func testStringLiteralWithNewlineEmitsErrors() {
+		let contents = "\"Hello\nWorld!\""
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		let errors = results.errors.map(\.value)
+		XCTAssertEqual(tokenTypes, [.identifier, .bang, .endOfFile])
+		XCTAssertEqual(errors, [.unterminatedString("\"Hello"), .unterminatedString("\"")])
 	}
 
 	func testIntegerLiteralIsScanned() {
@@ -150,5 +159,39 @@ final class LexerTests: XCTestCase {
 			.keywordVar, .identifier, .equal, .stringLiteral, .newline,
 			.identifier, .plus, .integerLiteral, .endOfFile
 		])
+	}
+
+	func testTokenLineAndColumnNumbersAreCorrect() {
+		let contents = """
+		struct FooBar<T> {
+			value: T
+		}
+
+		// This is a comment
+		var foo = FooBar(value: 17)
+		const bar = foo.value + 12
+		"""
+		let results = subject.scanAllTokens(fileContents: contents)
+		let lines = results.tokens.map(\.line)
+		let columns = results.tokens.map(\.column)
+		XCTAssertEqual(lines, [
+			1, 1, 1, 1, 1, 1, 1,
+			2, 2, 2, 2,
+			3, 3,
+			4,
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+			7, 7, 7, 7, 7, 7, 7, 7,
+			7 // EOF
+		])
+		XCTAssertEqual(columns, [
+			1, 8, 14, 15, 16, 18, 19,
+			2, 7, 9, 10,
+			1, 2,
+			1,
+			1, 5, 9, 11, 17, 18, 23, 25, 27, 28,
+			1, 7, 11, 13, 16, 17, 23, 25,
+			27 // EOF
+		])
+		XCTAssertEqual(results.errors, [])
 	}
 }
