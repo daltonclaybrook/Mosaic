@@ -1,4 +1,4 @@
-public struct Token {
+public struct Token: Equatable {
 	public let type: TokenType
 	public let line: Int
 	public let column: Int

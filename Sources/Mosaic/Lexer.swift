@@ -5,6 +5,11 @@ public struct LexerResults {
 	public let errors: [Located<ParseError>]
 }
 
+public protocol LexerType {
+	func scanAllTokens(fileURL: URL) throws -> LexerResults
+	func scanAllTokens(fileContents: String) -> LexerResults
+}
+
 public final class Lexer {
 	private var scannedTokens: [Token] = []
 	private var errors: [Located<ParseError>] = []
@@ -165,29 +170,34 @@ public final class Lexer {
 		var scannedDot = false
 		while !cursor.isAtEnd {
 			let next = cursor.peek()
-			if next == "." && scannedDot {
-				// Already scanned a dot in this number literal
-				emitError(.invalidNumberLiteral(lexeme))
-				return
-			} else if next == "." && !cursor.peek(count: 1).isNumber {
-				// The character following a dot must be a number
-				emitError(.invalidNumberLiteral(lexeme))
-				return
-			} else if next == "." {
-				scannedDot = true
+			if next == "." {
 				lexeme.append(cursor.advance())
+				if scannedDot {
+					// Already scanned a dot in this number literal
+					emitError(.invalidNumberLiteral(lexeme))
+					return
+				} else if !cursor.peek().isNumber {
+					// The character following a dot must be a number
+					emitError(.invalidNumberLiteral(lexeme))
+					return
+				} else {
+					scannedDot = true
+					lexeme.append(cursor.advance())
+				}
 			} else if next.isNumber {
 				lexeme.append(cursor.advance())
 			} else if next.isWhitespace {
-				let tokenType: TokenType = scannedDot ? .fixedLiteral : .integerLiteral
-				makeToken(type: tokenType, lexeme: lexeme)
-				return
+				// Reached the end of the number. Break out of loop to make token.
+				break
 			} else {
 				// Number literal must be terminated with a whitespace character
 				emitError(.invalidNumberLiteral(lexeme))
 				return
 			}
 		}
+
+		let tokenType: TokenType = scannedDot ? .fixedLiteral : .integerLiteral
+		makeToken(type: tokenType, lexeme: lexeme)
 	}
 
 	func scanIdentifierOrKeyword(cursor: inout Cursor) {

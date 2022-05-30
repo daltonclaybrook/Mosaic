@@ -1,5 +1,5 @@
 /// The various kinds of tokens that make up the Mosaic grammar
-public enum TokenType {
+public enum TokenType: Equatable {
 	// Symbols
 	case dot // '.'
 	case comma // ','
