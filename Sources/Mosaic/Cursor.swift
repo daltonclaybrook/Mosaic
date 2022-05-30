@@ -53,10 +53,15 @@ public struct Cursor {
 		return true
 	}
 
+	/// Returns the next character in the string after `count` characters. Does not advance the current index.
 	/// Return the next character in the string without advancing the current index
-	public func peek() -> Character {
-		guard !isAtEnd else { return "\0" }
-		return string[currentIndex]
+	public func peek(count: Int = 0) -> Character {
+		guard
+			let desiredIndex = string.index(currentIndex, offsetBy: count, limitedBy: string.endIndex),
+			desiredIndex < string.endIndex
+		else { return "\0" }
+
+		return string[desiredIndex]
 	}
 
 	// MARK: - Private helpers

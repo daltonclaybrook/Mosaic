@@ -160,7 +160,34 @@ public final class Lexer {
 	}
 
 	func scanNumberLiteral(cursor: inout Cursor) {
-		
+		// The first digit has already been scanned
+		var lexeme = String(cursor.previous)
+		var scannedDot = false
+		while !cursor.isAtEnd {
+			let next = cursor.peek()
+			if next == "." && scannedDot {
+				// Already scanned a dot in this number literal
+				emitError(.invalidNumberLiteral(lexeme))
+				return
+			} else if next == "." && !cursor.peek(count: 1).isNumber {
+				// The character following a dot must be a number
+				emitError(.invalidNumberLiteral(lexeme))
+				return
+			} else if next == "." {
+				scannedDot = true
+				lexeme.append(cursor.advance())
+			} else if next.isNumber {
+				lexeme.append(cursor.advance())
+			} else if next.isWhitespace {
+				let tokenType: TokenType = scannedDot ? .fixedLiteral : .integerLiteral
+				makeToken(type: tokenType, lexeme: lexeme)
+				return
+			} else {
+				// Number literal must be terminated with a whitespace character
+				emitError(.invalidNumberLiteral(lexeme))
+				return
+			}
+		}
 	}
 
 	func scanIdentifierOrKeyword(cursour: inout Cursor) {
