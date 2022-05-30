@@ -57,6 +57,15 @@ final class LexerTests: XCTestCase {
 		XCTAssertEqual(results.errors, [])
 	}
 
+	func testUnterminatedStringEmitsError() {
+		let contents = "\"Hello, world!"
+		let results = subject.scanAllTokens(fileContents: contents)
+		let tokenTypes = results.tokens.map(\.type)
+		let errors = results.errors.map(\.value)
+		XCTAssertEqual(tokenTypes, [.endOfFile])
+		XCTAssertEqual(errors, [.unterminatedString(contents)])
+	}
+
 	func testIntegerLiteralIsScanned() {
 		let contents = "123"
 		let results = subject.scanAllTokens(fileContents: contents)
@@ -133,7 +142,7 @@ final class LexerTests: XCTestCase {
 		// This is a comment line
 		var foo = "abc"
 		// This is another
-		foo + 2
+		foo+2
 		"""
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)

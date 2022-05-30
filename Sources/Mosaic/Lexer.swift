@@ -186,13 +186,9 @@ public final class Lexer {
 				}
 			} else if next.isNumber {
 				lexeme.append(cursor.advance())
-			} else if next.isWhitespace {
+			} else {
 				// Reached the end of the number. Break out of loop to make token.
 				break
-			} else {
-				// Number literal must be terminated with a whitespace character
-				emitError(.invalidNumberLiteral(lexeme))
-				return
 			}
 		}
 
@@ -207,12 +203,8 @@ public final class Lexer {
 			let next = cursor.peek()
 			if next.isIdentifierChar {
 				lexeme.append(cursor.advance())
-			} else if next.isWhitespace {
-				break
 			} else {
-				// Identifier must be terminated with whitespace character
-				emitError(.invalidIdentifier(lexeme))
-				return
+				break
 			}
 		}
 
