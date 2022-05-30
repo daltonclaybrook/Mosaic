@@ -1,4 +1,19 @@
-sourceFile      → statement* ;
+# Mosaic Grammar
+
+```
+sourceFile      → declaration* EOF ;
+```
+
+## Declarations
+
+```
+declaration     → structDecl
+                | implDecl
+                | funcDecl
+                | varDecl
+                | statement ;
+
+structDecl      → "struct" 
 
 statement       → varDecl
                 | exprStmt
@@ -60,3 +75,4 @@ boolLiteral     → "true" | "false" ;
 
 stmtEnd         → "\n" | scopeEnd ;
 scopeEnd        → The end of a block or source file
+```
