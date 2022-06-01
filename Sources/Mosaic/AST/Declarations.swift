@@ -13,7 +13,7 @@ public enum InSourceDeclaration {
 	case variable(VariableDeclaration)
 }
 
-/// A struct declaration, which is a collection of variables.
+/// A struct declaration, which is a named collection of variables.
 public struct StructDeclaration {
 	public var declarations: [VariableDeclaration]
 }
