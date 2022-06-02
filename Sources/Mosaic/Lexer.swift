@@ -10,7 +10,7 @@ public protocol LexerType {
 	func scanAllTokens(fileContents: String) -> LexerResults
 }
 
-public final class Lexer {
+public final class Lexer: LexerType {
 	private var scannedTokens: [Token] = []
 	private var errors: [Located<ParseError>] = []
 
