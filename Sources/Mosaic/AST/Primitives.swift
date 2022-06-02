@@ -5,6 +5,7 @@ public struct Literal {
 		case boolean
 		case integer
 		case fixed
+		case string
 	}
 
 	/// The token of the literal
