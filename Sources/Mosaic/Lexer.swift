@@ -87,6 +87,8 @@ public final class Lexer: LexerType {
 			makeToken(type: .percent, lexeme: next)
 		case "+":
 			makeToken(type: .plus, lexeme: next)
+		case "-" where cursor.match(next: ">"):
+			makeToken(type: .returnArrow, lexeme: "->")
 		case "-":
 			makeToken(type: .minus, lexeme: next)
 		case "=":

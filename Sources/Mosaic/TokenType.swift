@@ -22,6 +22,7 @@ public enum TokenType: Equatable {
 	case trailingBracket // ']'
 	case lessThan // '<'
 	case greaterThan // '>'
+	case returnArrow // '->'
 
 	// Literals
 	case stringLiteral
