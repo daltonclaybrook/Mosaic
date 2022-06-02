@@ -190,7 +190,10 @@ public final class Parser {
 	}
 
 	private func parseFunctionParameter() throws -> FuncDeclaration.Parameter {
-
+		let name = try consume(type: .identifier, message: "Expected name identifier of function parameter")
+		try consume(type: .colon, message: "Expected ':' after parameter name")
+		let type = try parseTypeIdentifier()
+		return FuncDeclaration.Parameter(name: name, type: type)
 	}
 
 	private func parseStatementsBlock() throws -> [Statement] {
@@ -204,7 +207,83 @@ public final class Parser {
 	}
 
 	private func parseStatement() throws -> Statement {
-		
+		switch currentToken.type {
+		case .keywordVar, .keywordConst:
+			return try .variable(parseVariableDeclaration())
+		case .keywordEach:
+			return try .each(parseEachStatement())
+		case .keywordWhile:
+			return try .`while`(parseWhileStatement())
+		case .keywordIf:
+			return try .`if`(parseIfStatement())
+		case .keywordReturn:
+			return try .return(parseReturnStatement())
+		case .keywordBreak:
+			return try .break(parseBreakStatement())
+		default:
+			return try .expression(parseExpressionStatement())
+		}
+	}
+
+	private func parseEachStatement() throws -> EachStatement {
+		try consume(type: .keywordEach, message: "Expected 'each' keyword")
+		let element = try consume(type: .identifier, message: "Expected element name identifier")
+		try consume(type: .keywordIn, message: "Expected 'in' keyword after element name")
+		let collection = try parseExpression()
+		let statements = try parseStatementsBlock()
+		return EachStatement(
+			element: element,
+			collection: collection,
+			body: statements
+		)
+	}
+
+	private func parseWhileStatement() throws -> WhileStatement {
+		try consume(type: .keywordWhile, message: "Expected 'while' keyword")
+		let condition = try parseExpression()
+		let statements = try parseStatementsBlock()
+		return WhileStatement(
+			condition: condition,
+			body: statements
+		)
+	}
+
+	private func parseIfStatement() throws -> IfStatement {
+		try consume(type: .keywordIf, message: "Expected 'if' keyword")
+		let condition = try parseExpression()
+		let thenStatements = try parseStatementsBlock()
+
+		var elseStatements: [Statement]?
+		if match(type: .keywordElse) {
+			elseStatements = try parseStatementsBlock()
+		}
+
+		return IfStatement(
+			condition: condition,
+			thenBranch: thenStatements,
+			elseBranch: elseStatements
+		)
+	}
+
+	private func parseReturnStatement() throws -> ReturnStatement {
+		let token = try consume(type: .keywordReturn, message: "Expected 'return' keyword")
+		let value = token.isTerminatedWithNewline ? nil : try parseExpression()
+		try verifyStatementEnd()
+		return ReturnStatement(
+			value: value
+		)
+	}
+
+	private func parseBreakStatement() throws -> BreakStatement {
+		try consume(type: .keywordBreak, message: "Expected 'break' keyword")
+		try verifyStatementEnd()
+		return BreakStatement()
+	}
+
+	private func parseExpressionStatement() throws -> Expression {
+		let expression = try parseExpression()
+		try verifyStatementEnd()
+		return expression
 	}
 
 	private func parseExpression() throws -> Expression {

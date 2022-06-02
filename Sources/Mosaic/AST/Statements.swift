@@ -16,9 +16,8 @@ public struct EachStatement {
 	public var element: Token
 	/// The collection of elements being iterated
 	public var collection: Expression
-	/// The list of statements contained within the each block evaluated once
-	/// per iteration
-	public var statements: [Statement]
+	/// The list of statements that make up the body of the each statement.
+	public var body: [Statement]
 }
 
 /// An if statement
