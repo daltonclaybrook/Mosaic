@@ -27,6 +27,17 @@ public struct ImplDeclaration {
 
 /// A function declaration, which is a collection of statements
 public struct FuncDeclaration {
+	public struct Parameter {
+		public var name: Token
+		public var type: TypeIdentifier
+	}
+
+	/// The name of the function
+	public var nameIdentifier: Token
+	/// The function's parameters
+	public var parameters: [Parameter]
+	/// The function's return type, if it return's a value
+	public var returnType: TypeIdentifier?
 	/// The list of statements contained within the body of the function
 	public var statements: [Statement]
 }

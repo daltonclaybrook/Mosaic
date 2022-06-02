@@ -56,7 +56,11 @@ public final class Parser {
 		case .keywordStruct:
 			return try .structure(parseStructureDeclaration())
 		case .keywordFunc:
+			return try .function(parseFunctionDeclaration())
 		case .keywordVar, .keywordConst:
+			return try .variable(parseVariableDeclaration())
+		default:
+			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Token not allowed in the root of a source file")
 		}
 	}
 
@@ -65,7 +69,7 @@ public final class Parser {
 		let type = try parseTypeDeclaration()
 		try consume(type: .leadingBrace, message: "Expected '{' after struct type")
 		var variables: [VariableDeclaration] = []
-		while match(type: .trailingBrace) == false {
+		while !isAtEnd && match(type: .trailingBrace) == false {
 			try variables.append(parseVariableDeclaration())
 		}
 		return StructDeclaration(type: type, variables: variables)
@@ -74,10 +78,23 @@ public final class Parser {
 	private func parseVariableDeclaration() throws -> VariableDeclaration {
 		let mutability = try parseVariableMutability()
 		let name = try consume(type: .identifier, message: "Expected variable name identifier")
+
 		var type: TypeIdentifier?
 		if match(type: .colon) {
 			type = try parseTypeIdentifier()
 		}
+
+		var initialValue: Expression?
+		if match(type: .equal) {
+			initialValue = try parseExpression()
+		}
+
+		return VariableDeclaration(
+			mutability: mutability,
+			nameIdentifier: name,
+			typeIdentifier: type,
+			initialValue: initialValue
+		)
 	}
 
 	private func parseVariableMutability() throws -> VariableDeclaration.Mutability {
@@ -109,9 +126,10 @@ public final class Parser {
 		var generics: [GenericIdentifier] = []
 		if match(type: .lessThan) {
 			try generics.append(parseSingleGenericIdentifier())
-			while match(type: .greaterThan) == false {
+			while match(type: .comma) {
 				try generics.append(parseSingleGenericIdentifier())
 			}
+			try consume(type: .greaterThan, message: "Expected '>' after generics")
 		}
 		return TypeIdentifier(nameIdentifier: name, generics: generics)
 	}
@@ -140,6 +158,58 @@ public final class Parser {
 		}
 	}
 
+	private func parseFunctionDeclaration() throws -> FuncDeclaration {
+		try consume(type: .keywordFunc, message: "Expected 'func' keyword")
+		let name = try consume(type: .identifier, message: "Expected function name identifier after 'func' keyword")
+		try consume(type: .leadingParen, message: "Expected '(' after function name")
+
+		var parameters: [FuncDeclaration.Parameter] = []
+		if match(type: .trailingParen) == false {
+			try parameters.append(parseFunctionParameter())
+			while match(type: .comma) {
+				try parameters.append(parseFunctionParameter())
+			}
+			try consume(type: .trailingParen, message: "Expected ')' after parameter list")
+		}
+
+		var returnType: TypeIdentifier?
+		if willMatch(.minus, .greaterThan) {
+			currentTokenIndex += 2
+			returnType = try parseTypeIdentifier()
+		}
+
+		let statements = try parseStatementsBlock()
+
+		return FuncDeclaration(
+			nameIdentifier: name,
+			parameters: parameters,
+			returnType: returnType,
+			statements: statements
+		)
+	}
+
+	private func parseFunctionParameter() throws -> FuncDeclaration.Parameter {
+
+	}
+
+	private func parseStatementsBlock() throws -> [Statement] {
+		try consume(type: .leadingBrace, message: "Expected '{' token")
+		var statements: [Statement] = []
+		while !isAtEnd && willMatch(.trailingBrace) == false {
+			try statements.append(parseStatement())
+		}
+		try consume(type: .trailingBrace, message: "Expected '}' to close block")
+		return statements
+	}
+
+	private func parseStatement() throws -> Statement {
+		
+	}
+
+	private func parseExpression() throws -> Expression {
+
+	}
+
 	// MARK: - Private helpers
 
 	private var isAtEnd: Bool {
@@ -165,6 +235,17 @@ public final class Parser {
 		} else {
 			return false
 		}
+	}
+
+	/// Returns true if the next several tokens will match the provided sequence of token types. This function
+	/// does not advance the current token index.
+	private func willMatch(_ types: TokenType...) -> Bool {
+		for (type, offset) in zip(types, 0...) {
+			let index = currentTokenIndex + offset
+			guard index < tokens.count else { return false }
+			guard tokens[index].type == type else { return false }
+		}
+		return true
 	}
 
 	@discardableResult
