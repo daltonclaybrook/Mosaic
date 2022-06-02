@@ -18,7 +18,7 @@ final class LexerTests: XCTestCase {
 	}
 
 	func testSymbolsAreScanned() {
-		let contents = ".,!*/%+-=&|:'(){}[]<>"
+		let contents = ".,!*/%+-=&|:'(){}[]<>->"
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)
 		XCTAssertEqual(tokenTypes, [
@@ -26,7 +26,8 @@ final class LexerTests: XCTestCase {
 			.plus, .minus, .equal, .ampersand, .pipe, .colon,
 			.singleQuote, .leadingParen, .trailingParen,
 			.leadingBrace, .trailingBrace, .leadingBracket,
-			.trailingBracket, .lessThan, .greaterThan, .endOfFile
+			.trailingBracket, .lessThan, .greaterThan, .returnArrow,
+			.endOfFile
 		])
 		XCTAssertEqual(results.errors, [])
 	}

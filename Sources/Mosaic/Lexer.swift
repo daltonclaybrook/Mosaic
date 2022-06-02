@@ -56,9 +56,17 @@ public final class Lexer: LexerType {
 				type: type,
 				line: currentLexemeLine,
 				column: currentLexemeColumn,
-				lexeme: lexeme.description
+				lexeme: lexeme.description,
+				// This field will be updated in another place
+				isTerminatedWithNewline: false
 			)
 		)
+	}
+
+	/// Update the previously scanned token to indicate that a newline occurs after it
+	private func updatePreviousTokenWithNewline() {
+		guard !scannedTokens.isEmpty else { return }
+		scannedTokens[scannedTokens.count - 1].isTerminatedWithNewline = true
 	}
 
 	/// Convenience function for generating an error at the current scan location
@@ -125,7 +133,7 @@ public final class Lexer: LexerType {
 			makeToken(type: .slash, lexeme: next)
 		default:
 			if next.isNewline {
-				makeToken(type: .newline, lexeme: next)
+				updatePreviousTokenWithNewline()
 			} else if next.isNumber {
 				scanNumberLiteral(cursor: &cursor)
 			} else if next.isIdentifierHead {

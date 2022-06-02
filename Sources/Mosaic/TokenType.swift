@@ -33,7 +33,6 @@ public enum TokenType: Equatable {
 	// Special
 	case identifier
 	case endOfFile
-	case newline
 
 	// Keywords
 	case keywordStruct

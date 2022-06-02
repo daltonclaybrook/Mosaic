@@ -52,7 +52,6 @@ public final class Parser {
 	}
 
 	private func parseInSourceDeclaration() throws -> InSourceDeclaration {
-		skipNewlines()
 		switch currentToken.type {
 		case .keywordStruct:
 			return try .structure(parseStructureDeclaration())
@@ -152,7 +151,6 @@ public final class Parser {
 	}
 
 	private func parseSingleGenericIdentifier() throws -> GenericIdentifier {
-		skipNewlines()
 		if let literalKind = currentToken.type.literalKind {
 			let token = try consumeNext()
 			return .value(Literal(token: token, kind: literalKind))
@@ -231,7 +229,6 @@ public final class Parser {
 
 	@discardableResult
 	private func match(type: TokenType) -> Bool {
-		skipNewlines()
 		guard !isAtEnd else { return false }
 		if tokens[currentTokenIndex].type == type {
 			currentTokenIndex += 1
@@ -241,30 +238,15 @@ public final class Parser {
 		}
 	}
 
-	/// Returns true if the next several tokens will match the provided sequence of token types. Newline tokens are
-	/// skipped when performing this check. This function does not advance the current token index.
+	/// Returns true if the next several tokens will match the provided sequence of token types. This function
+	/// does not advance the current token index.
 	private func willMatch(_ types: TokenType...) -> Bool {
-		assert(types.isEmpty == false, "Do not pass empty types")
-		var types = types
-		var offset = 0
-
-		while tokens[currentTokenIndex + offset].type != .endOfFile {
-			defer { offset += 1 }
-			if tokens[currentTokenIndex + offset].type == .newline {
-				// skip newlines
-				continue
-			}
-			guard types[0] == tokens[currentTokenIndex + offset].type else {
-				return false
-			}
-			
-			types.removeFirst()
-			if types.isEmpty {
-				return true
-			}
+		for (type, offset) in zip(types, 0...) {
+			let index = currentTokenIndex + offset
+			guard index < tokens.count else { return false }
+			guard tokens[index].type == type else { return false }
 		}
-
-		return false
+		return true
 	}
 
 	@discardableResult
@@ -277,7 +259,6 @@ public final class Parser {
 
 	@discardableResult
 	private func consumeNext() throws -> Token {
-		skipNewlines()
 		guard !isAtEnd else {
 			throw ParseError.unexpectedEndOfFile
 		}
@@ -285,21 +266,20 @@ public final class Parser {
 		return previousToken
 	}
 
-	/// Verifies that the current token is suitable to terminate a statement or variable
-	/// declaration. This function does not consume the token.
+	/// Verifies that the previoew/current tokens are suitable to terminate a statement or variable
+	/// declaration. This function does not consume any tokens.
 	private func verifyStatementEnd() throws {
+		if previousToken.isTerminatedWithNewline {
+			// Newlines are an acceptable terminator for a statement
+			return
+		}
+
 		switch currentToken.type {
-		case .newline, .trailingBrace, .endOfFile:
+		case .trailingBrace, .endOfFile:
 			// These tokens are acceptable
 			break
 		default:
 			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Statement is unterminated. Statements are terminated with a newline character, or by a scope ending")
-		}
-	}
-
-	private func skipNewlines() {
-		while !isAtEnd && tokens[currentTokenIndex].type == .newline {
-			currentTokenIndex += 1
 		}
 	}
 
