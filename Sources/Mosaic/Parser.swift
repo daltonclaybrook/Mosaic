@@ -102,9 +102,10 @@ public final class Parser {
 	private func parseVariableMutability() throws -> VariableDeclaration.Mutability {
 		if match(type: .keywordVar) {
 			return .variable
-		} else {
-			try consume(type: .keywordConst, message: "Expected 'const' or 'var' keyword in variable declaration")
+		} else if match(type: .keywordConst) {
 			return .constant
+		} else {
+			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected 'const' or 'var' keyword in variable declaration")
 		}
 	}
 
@@ -174,7 +175,7 @@ public final class Parser {
 		case .keywordBreak:
 			return try .break(parseBreakStatement())
 		default:
-			return try .expression(parseExpressionStatement())
+			return try parseAssignmentOrExpressionStatement()
 		}
 	}
 
@@ -233,13 +234,26 @@ public final class Parser {
 		return BreakStatement()
 	}
 
-	private func parseExpressionStatement() throws -> Expression {
+	private func parseAssignmentOrExpressionStatement() throws -> Statement {
 		let expression = try parseExpression()
-		try verifyStatementEnd()
-		return expression
+		if match(type: .equal) {
+			guard let getter = expression as? Getter else {
+				throw ParseError.invalidAssignmentTarget(message: "The expression that preceded the assignment operator was not a valid assignment target.")
+			}
+			let value = try parseExpression()
+			try verifyStatementEnd()
+			return .assignment(Setter(getter: getter, value: value))
+		} else {
+			try verifyStatementEnd()
+			return .expression(expression)
+		}
 	}
 
 	private func parseExpression() throws -> Expression {
+		try parseLogicOr()
+	}
+
+	private func parseLogicOr() throws -> Expression {
 
 	}
 
@@ -298,7 +312,7 @@ public final class Parser {
 		return previousToken
 	}
 
-	/// Verifies that the previoew/current tokens are suitable to terminate a statement or variable
+	/// Verifies that the previous/current tokens are suitable to terminate a statement or variable
 	/// declaration. This function does not consume any tokens.
 	private func verifyStatementEnd() throws {
 		if previousToken.isTerminatedWithNewline {

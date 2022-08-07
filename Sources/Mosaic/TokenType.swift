@@ -50,6 +50,7 @@ public enum TokenType: Equatable {
 	case keywordTrue
 	case keywordFalse
 	case keywordNil
+	case keywordSelf
 }
 
 extension TokenType {
@@ -68,7 +69,8 @@ extension TokenType {
 		"break": .keywordBreak,
 		"true": .keywordTrue,
 		"false": .keywordFalse,
-		"nil": .keywordNil
+		"nil": .keywordNil,
+		"self": .keywordSelf
 	]
 
 	static let allKeywords: Set<TokenType> = Set(tokenTypesFromKeyworkLexemes.values)

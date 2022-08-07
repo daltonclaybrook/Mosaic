@@ -20,11 +20,12 @@
 
 public protocol Expression {}
 
-public struct Assignment: Expression {
-	/// The identifier token that is the target of the assignment
-	public var name: Token
-	/// The expression to evaluate and assign to the named identifier
-	public var value: Expression
+/// A dot-delimited list of identifiers representing a getter.
+public struct Getter: Expression {
+	/// If `self` is used in the getter, this field is non-nil
+	public var selfToken: Token?
+	/// The list of dot-delimited identifiers
+	public var identifiers: [Identifier]
 }
 
 public struct Binary: Expression {

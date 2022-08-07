@@ -34,7 +34,8 @@ statement       → varDecl
                 | ifStmt
                 | returnStmt
                 | breakStmt
-                | whileStmt ;
+                | whileStmt
+                | assignmentStmt ;
 
 exprStmt        → expression stmtEnd ;
 eachStmt        → "each" identifier "in" expression block ;
@@ -42,6 +43,7 @@ ifStmt          → "if" expression block ( "else" block )? ;
 returnStmt      → "return" expression? stmtEnd ;
 breakStmt       → "break" stmtEnd ;
 whileStmt       → "while" expression block ;
+assignmentStmt  → getter "=" expression stmtEnd ;
 
 block           → "{" statement* "}" ;
 ```
@@ -50,7 +52,7 @@ block           → "{" statement* "}" ;
 
 ```
 expression      → assignment ;
-assignment      → identifier "=" assignment
+assignment      → call "=" assignment
                 | logicOr ;
 logicOr         → logicAnd ( "||" logicAnd )* ;
 logicAnd        → bitwiseOr ( "&&" bitwiseOr )* ;
@@ -63,11 +65,15 @@ bitwiseShift    → term ( ( "<<" | ">>" ) term )* ;
 term            → factor ( ( "-" | "+" ) factor )* ;
 factor          → unary ( ( "/" | "*" | "%" ) unary )* ;
 unary           → ( "!" | "-" ) unary
+                | call ;
+call            → getter "(" arguments? ")" ;
                 | primary ;
+arguments       → expression ( "," expression )* ;
 primary         → literal
                 | "nil"
                 | "(" expression ")"
-                | identifier ;
+                | getter ;
+getter          → ( "self" | identifier ) ( "." identifier )*
 ```
 
 ## Primitives

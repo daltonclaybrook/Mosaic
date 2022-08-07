@@ -7,6 +7,7 @@ public enum Statement {
 	case `return`(ReturnStatement)
 	case `break`(BreakStatement)
 	case `while`(WhileStatement)
+	case assignment(Setter)
 }
 
 /// A loop that iterates through each element of a collection
@@ -47,4 +48,11 @@ public struct WhileStatement {
 	/// The body of the while statement that is evaluated repeatedly as long as `condition`
 	/// evaluates to `true`
 	public var body: [Statement]
+}
+
+public struct Setter {
+	/// The target of the assignment
+	public var getter: Getter
+	/// The expression to evaluate and assign to the getter
+	public var value: Expression
 }

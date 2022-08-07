@@ -9,4 +9,6 @@ public enum ParseError: Error, Equatable {
 	case unexpectedToken(TokenType, lexeme: String, message: String)
 	/// The parser encountered the end of file unexpectedly
 	case unexpectedEndOfFile
+	/// The parser encountered an unexpected expression
+	case invalidAssignmentTarget(message: String)
 }
