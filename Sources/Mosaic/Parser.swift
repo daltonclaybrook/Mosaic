@@ -236,7 +236,8 @@ public final class Parser {
 
 	private func parseAssignmentOrExpressionStatement() throws -> Statement {
 		let expression = try parseExpression()
-		if match(type: .equal) {
+		if willMatch(.equal) && !willMatch(.equal, .equal) {
+			currentTokenIndex += 1
 			guard let getter = expression as? Getter else {
 				throw ParseError.invalidAssignmentTarget(message: "The expression that preceded the assignment operator was not a valid assignment target.")
 			}
@@ -254,31 +255,96 @@ public final class Parser {
 	}
 
 	private func parseLogicOr() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseLogicAnd()
+		while willMatch(.pipe, .pipe) {
+			currentTokenIndex += 2
+			let right = try parseLogicAnd()
+			expression = Binary(left: expression, right: right, operator: .logicOr)
+		}
+		return expression
 	}
 
 	private func parseLogicAnd() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseBitwiseOr()
+		while willMatch(.ampersand, .ampersand) {
+			currentTokenIndex += 2
+			let right = try parseBitwiseOr()
+			expression = Binary(left: expression, right: right, operator: .logicAnd)
+		}
+		return expression
 	}
 
 	private func parseBitwiseOr() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseBitwiseXor()
+		while willMatch(.pipe) && !willMatch(.pipe, .pipe) {
+			currentTokenIndex += 1
+			let right = try parseBitwiseXor()
+			expression = Binary(left: expression, right: right, operator: .bitwiseOr)
+		}
+		return expression
 	}
 
 	private func parseBitwiseXor() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseBitwiseAnd()
+		while match(type: .caret) {
+			let right = try parseBitwiseAnd()
+			expression = Binary(left: expression, right: right, operator: .bitwiseXor)
+		}
+		return expression
 	}
 
 	private func parseBitwiseAnd() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseEquality()
+		while willMatch(.ampersand) && !willMatch(.ampersand, .ampersand) {
+			currentTokenIndex += 1
+			let right = try parseEquality()
+			expression = Binary(left: expression, right: right, operator: .bitwiseAnd)
+		}
+		return expression
 	}
 
 	private func parseEquality() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseComparison()
+		while true {
+			if willMatch(.equal, .equal) {
+				currentTokenIndex += 2
+				let right = try parseComparison()
+				expression = Binary(left: expression, right: right, operator: .equal)
+			} else if willMatch(.bang, .equal) {
+				currentTokenIndex += 2
+				let right = try parseComparison()
+				expression = Binary(left: expression, right: right, operator: .notEqual)
+			} else {
+				break
+			}
+		}
+		return expression
 	}
 
 	private func parseComparison() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseBitwiseShift()
+		while true {
+			if willMatch(.greaterThan, .equal) {
+				currentTokenIndex += 2
+				let right = try parseBitwiseShift()
+				expression = Binary(left: expression, right: right, operator: .greaterThanOrEqual)
+			} else if willMatch(.lessThan, .equal) {
+				currentTokenIndex += 2
+				let right = try parseBitwiseShift()
+				expression = Binary(left: expression, right: right, operator: .lessThanOrEqual)
+			} else if willMatch(.greaterThan) && !willMatch(.greaterThan, .greaterThan) {
+				currentTokenIndex += 1
+				let right = try parseBitwiseShift()
+				expression = Binary(left: expression, right: right, operator: .greaterThan)
+			} else if willMatch(.lessThan) && !willMatch(.lessThan, .lessThan) {
+				currentTokenIndex += 1
+				let right = try parseBitwiseShift()
+				expression = Binary(left: expression, right: right, operator: .lessThan)
+			} else {
+				break
+			}
+		}
+		return expression
 	}
 
 	private func parseBitwiseShift() throws -> Expression {

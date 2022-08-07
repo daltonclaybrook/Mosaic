@@ -18,12 +18,12 @@ final class LexerTests: XCTestCase {
 	}
 
 	func testSymbolsAreScanned() {
-		let contents = ".,!*/%+-=&|:'(){}[]<>->"
+		let contents = ".,!*/%+-=&|^:'(){}[]<>->"
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)
 		XCTAssertEqual(tokenTypes, [
 			.dot, .comma, .bang, .star, .slash, .percent,
-			.plus, .minus, .equal, .ampersand, .pipe, .colon,
+			.plus, .minus, .equal, .ampersand, .pipe, .caret, .colon,
 			.singleQuote, .leadingParen, .trailingParen,
 			.leadingBrace, .trailingBrace, .leadingBracket,
 			.trailingBracket, .lessThan, .greaterThan, .returnArrow,

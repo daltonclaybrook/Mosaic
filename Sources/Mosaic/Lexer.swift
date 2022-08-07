@@ -105,6 +105,8 @@ public final class Lexer: LexerType {
 			makeToken(type: .ampersand, lexeme: next)
 		case "|":
 			makeToken(type: .pipe, lexeme: next)
+		case "^":
+			makeToken(type: .caret, lexeme: next)
 		case ":":
 			makeToken(type: .colon, lexeme: next)
 		case "'":

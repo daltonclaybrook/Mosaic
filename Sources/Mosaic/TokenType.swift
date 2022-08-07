@@ -12,6 +12,7 @@ public enum TokenType: Equatable {
 	case equal // '='
 	case ampersand // '&'
 	case pipe // '|'
+	case caret // '^'
 	case colon // ':'
 	case singleQuote // '
 	case leadingParen // '('
