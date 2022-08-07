@@ -7,9 +7,6 @@ let package = Package(
 	platforms: [
 		.macOS(.v11)
 	],
-	products: [
-		.executable(name: "mosaic", targets: ["Mosaic"])
-	],
     dependencies: [
     ],
     targets: [

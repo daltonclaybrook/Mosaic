@@ -32,14 +32,6 @@ final class LexerTests: XCTestCase {
 		XCTAssertEqual(results.errors, [])
 	}
 
-	func testNewlineIsScanned() {
-		let contents = "\n"
-		let results = subject.scanAllTokens(fileContents: contents)
-		let tokenTypes = results.tokens.map(\.type)
-		XCTAssertEqual(tokenTypes, [.newline, .endOfFile])
-		XCTAssertEqual(results.errors, [])
-	}
-
 	func testInvalidSymbolEmitsError() {
 		let contents = "$"
 		let results = subject.scanAllTokens(fileContents: contents)
@@ -123,14 +115,14 @@ final class LexerTests: XCTestCase {
 	}
 
 	func testKeywordsAreScanned() {
-		let contents = "struct impl func const var if else each in while return break true false nil"
+		let contents = "struct impl func const var if else each in while return break true false nil self"
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)
 		let expectedKeywords: [TokenType] = [
 			.keywordStruct, .keywordImpl, .keywordFunc, .keywordConst,
 			.keywordVar, .keywordIf, .keywordElse, .keywordEach, .keywordIn,
 			.keywordWhile, .keywordReturn, .keywordBreak, .keywordTrue,
-			.keywordFalse, .keywordNil
+			.keywordFalse, .keywordNil, .keywordSelf
 		]
 		XCTAssertEqual(tokenTypes, expectedKeywords + [.endOfFile])
 		// Ensure we've tested all keywords
@@ -157,7 +149,7 @@ final class LexerTests: XCTestCase {
 		let results = subject.scanAllTokens(fileContents: contents)
 		let tokenTypes = results.tokens.map(\.type)
 		XCTAssertEqual(tokenTypes, [
-			.keywordVar, .identifier, .equal, .stringLiteral, .newline,
+			.keywordVar, .identifier, .equal, .stringLiteral,
 			.identifier, .plus, .integerLiteral, .endOfFile
 		])
 	}
@@ -176,20 +168,18 @@ final class LexerTests: XCTestCase {
 		let lines = results.tokens.map(\.line)
 		let columns = results.tokens.map(\.column)
 		XCTAssertEqual(lines, [
-			1, 1, 1, 1, 1, 1, 1,
-			2, 2, 2, 2,
-			3, 3,
-			4,
-			6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+			1, 1, 1, 1, 1, 1,
+			2, 2, 2,
+			3,
+			6, 6, 6, 6, 6, 6, 6, 6, 6,
 			7, 7, 7, 7, 7, 7, 7, 7,
 			7 // EOF
 		])
 		XCTAssertEqual(columns, [
-			1, 8, 14, 15, 16, 18, 19,
-			2, 7, 9, 10,
-			1, 2,
+			1, 8, 14, 15, 16, 18,
+			2, 7, 9,
 			1,
-			1, 5, 9, 11, 17, 18, 23, 25, 27, 28,
+			1, 5, 9, 11, 17, 18, 23, 25, 27,
 			1, 7, 11, 13, 16, 17, 23, 25,
 			27 // EOF
 		])

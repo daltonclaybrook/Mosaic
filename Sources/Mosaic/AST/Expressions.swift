@@ -1,6 +1,4 @@
-//expression      → assignment ;
-//assignment      → simpleIdentifier "=" assignment
-//				| logicOr ;
+//expression      → logicOr ;
 //logicOr         → logicAnd ( "||" logicAnd )* ;
 //logicAnd        → bitwiseOr ( "&&" bitwiseOr )* ;
 //bitwiseOr       → bitwiseXor ( "|" bitwiseXor )* ;
@@ -12,11 +10,15 @@
 //term            → factor ( ( "-" | "+" ) factor )* ;
 //factor          → unary ( ( "/" | "*" | "%" ) unary )* ;
 //unary           → ( "!" | "-" ) unary
+//				| call ;
+//call            → getter "(" arguments? ")" ;
 //				| primary ;
+//arguments       → expression ( "," expression )* ;
 //primary         → literal
 //				| "nil"
 //				| "(" expression ")"
-//				| simpleIdentifier ;
+//				| getter ;
+//getter          → ( "self" | identifier ) ( "." identifier )*
 
 public protocol Expression {}
 

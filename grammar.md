@@ -51,9 +51,7 @@ block           → "{" statement* "}" ;
 ## Expressions
 
 ```
-expression      → assignment ;
-assignment      → call "=" assignment
-                | logicOr ;
+expression      → logicOr ;
 logicOr         → logicAnd ( "||" logicAnd )* ;
 logicAnd        → bitwiseOr ( "&&" bitwiseOr )* ;
 bitwiseOr       → bitwiseXor ( "|" bitwiseXor )* ;

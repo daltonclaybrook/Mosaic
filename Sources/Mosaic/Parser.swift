@@ -254,7 +254,59 @@ public final class Parser {
 	}
 
 	private func parseLogicOr() throws -> Expression {
+		fatalError("unimplemented")
+	}
 
+	private func parseLogicAnd() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBitwiseOr() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBitwiseXor() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBitwiseAnd() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseEquality() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseComparison() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBitwiseShift() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBinaryTerm() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseBinaryFactor() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseUnary() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseCall() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parsePrimary() throws -> Expression {
+		fatalError("unimplemented")
+	}
+
+	private func parseGetter() throws -> Expression {
+		fatalError("unimplemented")
 	}
 
 	// MARK: - Private helpers
