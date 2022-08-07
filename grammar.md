@@ -10,19 +10,18 @@ sourceFile      → inSourceDecl* EOF ;
 # Declarations that can appear at the root of a source file
 inSourceDecl    → structDecl
                 | implDecl
-                | inStructDecl ;
+                | funcDecl ;
 
-structDecl      → "struct" simpleIdentifier ( "<" structGeneric ( "," structGeneric )* ">" ) structBlock ;
-structGeneric   → ( "'"? simpleIdentifier ( ":" simpleIdentifier )? ) ;
+structDecl      → "struct" identifier structBlock ;
 structBlock     → "{" varDecl* "}" ;
 
-implDecl        → "impl" simpleIdentifier "{" funcDecl* "}" ;
+implDecl        → "impl" identifier "{" funcDecl* "}" ;
 
-funcDecl        → "func" simpleIdentifier "(" parameters? ")" block ;
+funcDecl        → "func" identifier "(" funcParams? ")" block ;
 funcParams      → funcParam ( "," funcParam )* ;
-funcParam       → simpleIdentifier ":" simpleIdentifier ;
+funcParam       → identifier ":" identifier ;
 
-varDecl         → ( "var" | "const" ) simpleIdentifier ( ":" typeIdentifier )? ( "=" expression )? stmtEnd ;
+varDecl         → ( "var" | "const" ) identifier ( ":" identifier )? ( "=" expression )? stmtEnd ;
 ```
 
 ## Statements
@@ -37,7 +36,7 @@ statement       → varDecl
                 | whileStmt ;
 
 exprStmt        → expression stmtEnd ;
-eachStmt        → "each" simpleIdentifier "in" expression block ;
+eachStmt        → "each" identifier "in" expression block ;
 ifStmt          → "if" expression block ( "else" block )? ;
 returnStmt      → "return" expression? stmtEnd ;
 breakStmt       → "break" stmtEnd ;
@@ -50,7 +49,7 @@ block           → "{" statement* "}" ;
 
 ```
 expression      → assignment ;
-assignment      → simpleIdentifier "=" assignment
+assignment      → identifier "=" assignment
                 | logicOr ;
 logicOr         → logicAnd ( "||" logicAnd )* ;
 logicAnd        → bitwiseOr ( "&&" bitwiseOr )* ;
@@ -67,15 +66,13 @@ unary           → ( "!" | "-" ) unary
 primary         → literal
                 | "nil"
                 | "(" expression ")"
-                | simpleIdentifier ;
+                | identifier ;
 ```
 
 ## Primitives
 
 ```
-simpleIdentifier    → identifierHead identifierChar* ;
-genericIdentifier   → simpleIdentifier ( "<" ( typeIdentifier | literal ) ">" ) ;
-typeIdentifier  → simpleIdentifier | genericIdentifier ;
+identifier    → identifierHead identifierChar* ;
 
 identifierHead  → [a-z] | [A-Z] | "_" ;
 identifierChar  → ( identifierHead | decimalDigit ) ;
