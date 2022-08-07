@@ -10,7 +10,8 @@ sourceFile      → inSourceDecl* EOF ;
 # Declarations that can appear at the root of a source file
 inSourceDecl    → structDecl
                 | implDecl
-                | funcDecl ;
+                | funcDecl
+                | varDecl ;
 
 structDecl      → "struct" identifier structBlock ;
 structBlock     → "{" varDecl* "}" ;

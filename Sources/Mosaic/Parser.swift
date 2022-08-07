@@ -66,7 +66,7 @@ public final class Parser {
 
 	private func parseStructureDeclaration() throws -> StructDeclaration {
 		try consume(type: .keywordStruct, message: "Expected 'struct' keyword")
-		let type = try parseTypeDeclaration()
+		let type = try parseTypeIdentifier()
 		try consume(type: .leadingBrace, message: "Expected '{' after struct type")
 		var variables: [VariableDeclaration] = []
 		while !isAtEnd && match(type: .trailingBrace) == false {
@@ -108,56 +108,9 @@ public final class Parser {
 		}
 	}
 
-	private func parseTypeDeclaration() throws -> TypeDeclaration {
-		let name = try consume(type: .identifier, message: "Expected name identifier of type")
-		var generics: [GenericDeclaration] = []
-		if match(type: .lessThan) {
-			// Must contain at least one generic type after less-than symbol
-			try generics.append(parseSingleGenericDeclaration())
-			while match(type: .comma) {
-				try generics.append(parseSingleGenericDeclaration())
-			}
-			try consume(type: .greaterThan, message: "Expected '>' symbol after generics list")
-		}
-
-		return TypeDeclaration(nameIdentifier: name, generics: generics)
-	}
-
 	private func parseTypeIdentifier() throws -> TypeIdentifier {
 		let name = try consume(type: .identifier, message: "Expected name identifier of type")
-		var generics: [GenericIdentifier] = []
-		if match(type: .lessThan) {
-			try generics.append(parseSingleGenericIdentifier())
-			while match(type: .comma) {
-				try generics.append(parseSingleGenericIdentifier())
-			}
-			try consume(type: .greaterThan, message: "Expected '>' after generics")
-		}
-		return TypeIdentifier(nameIdentifier: name, generics: generics)
-	}
-
-	private func parseSingleGenericDeclaration() throws -> GenericDeclaration {
-		if match(type: .singleQuote) {
-			// This is a value generic
-			let name = try consume(type: .identifier, message: "Expected name of generic value")
-			try consume(type: .colon, message: "Expected ':' after generic value name")
-			let type = try parseTypeIdentifier()
-			return .value(name: name, type: type)
-		} else {
-			// This is a type generic
-			let name = try consume(type: .identifier, message: "Expected name of generic type")
-			return .type(name: name)
-		}
-	}
-
-	private func parseSingleGenericIdentifier() throws -> GenericIdentifier {
-		if let literalKind = currentToken.type.literalKind {
-			let token = try consumeNext()
-			return .value(Literal(token: token, kind: literalKind))
-		} else {
-			let type = try parseTypeIdentifier()
-			return .type(type)
-		}
+		return TypeIdentifier(nameIdentifier: name)
 	}
 
 	private func parseFunctionDeclaration() throws -> FuncDeclaration {

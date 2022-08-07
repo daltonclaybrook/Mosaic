@@ -15,7 +15,7 @@ public enum InSourceDeclaration {
 
 /// A struct declaration, which is a named collection of variables.
 public struct StructDeclaration {
-	public var type: TypeDeclaration
+	public var type: TypeIdentifier
 	public var variables: [VariableDeclaration]
 }
 
@@ -58,30 +58,9 @@ public struct VariableDeclaration {
 	public var initialValue: Expression?
 }
 
-/// A type declaration is used when declaring a struct. It is different than a type identifier.
-public struct TypeDeclaration {
-	/// The base name of the type
-	public var nameIdentifier: Token
-	/// The list of generics if present
-	public var generics: [GenericDeclaration]
-}
-
-/// A type can be generic over a type or a value
-public enum GenericDeclaration {
-	case type(name: Token)
-	case value(name: Token, type: TypeIdentifier)
-}
-
-public enum GenericIdentifier {
-	case type(TypeIdentifier)
-	case value(Literal)
-}
-
-/// A type identifier is used when annotating the type of a variable or function parameter.
-/// It is different from a type declaration.
+/// A type identifier is used when annotating the type of a variable or function parameter,
+/// Or when declaring a new type.
 public struct TypeIdentifier {
 	/// The base name of the type
 	public var nameIdentifier: Token
-	/// The list of generics if present
-	public var generics: [GenericIdentifier]
 }
