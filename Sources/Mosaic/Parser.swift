@@ -69,7 +69,7 @@ public final class Parser {
 		let type = try parseTypeIdentifier()
 		try consume(type: .leadingBrace, message: "Expected '{' after struct type")
 		var variables: [VariableDeclaration] = []
-		while !isAtEnd && match(type: .trailingBrace) == false {
+		while !isAtEnd && match(.trailingBrace) == false {
 			try variables.append(parseVariableDeclaration())
 		}
 		return StructDeclaration(type: type, variables: variables)
@@ -80,12 +80,12 @@ public final class Parser {
 		let name = try consume(type: .identifier, message: "Expected variable name identifier")
 
 		var type: TypeIdentifier?
-		if match(type: .colon) {
+		if match(.colon) {
 			type = try parseTypeIdentifier()
 		}
 
 		var initialValue: Expression?
-		if match(type: .equal) {
+		if match(.equal) {
 			initialValue = try parseExpression()
 		}
 
@@ -100,9 +100,9 @@ public final class Parser {
 	}
 
 	private func parseVariableMutability() throws -> VariableDeclaration.Mutability {
-		if match(type: .keywordVar) {
+		if match(.keywordVar) {
 			return .variable
-		} else if match(type: .keywordConst) {
+		} else if match(.keywordConst) {
 			return .constant
 		} else {
 			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected 'const' or 'var' keyword in variable declaration")
@@ -120,16 +120,16 @@ public final class Parser {
 		try consume(type: .leadingParen, message: "Expected '(' after function name")
 
 		var parameters: [FuncDeclaration.Parameter] = []
-		if match(type: .trailingParen) == false {
+		if match(.trailingParen) == false {
 			try parameters.append(parseFunctionParameter())
-			while match(type: .comma) {
+			while match(.comma) {
 				try parameters.append(parseFunctionParameter())
 			}
 			try consume(type: .trailingParen, message: "Expected ')' after parameter list")
 		}
 
 		var returnType: TypeIdentifier?
-		if match(type: .returnArrow) {
+		if match(.returnArrow) {
 			returnType = try parseTypeIdentifier()
 		}
 
@@ -208,7 +208,7 @@ public final class Parser {
 		let thenStatements = try parseStatementsBlock()
 
 		var elseStatements: [Statement]?
-		if match(type: .keywordElse) {
+		if match(.keywordElse) {
 			elseStatements = try parseStatementsBlock()
 		}
 
@@ -256,8 +256,7 @@ public final class Parser {
 
 	private func parseLogicOr() throws -> Expression {
 		var expression = try parseLogicAnd()
-		while willMatch(.pipe, .pipe) {
-			currentTokenIndex += 2
+		while match(.pipe, .pipe) {
 			let right = try parseLogicAnd()
 			expression = Binary(left: expression, right: right, operator: .logicOr)
 		}
@@ -266,8 +265,7 @@ public final class Parser {
 
 	private func parseLogicAnd() throws -> Expression {
 		var expression = try parseBitwiseOr()
-		while willMatch(.ampersand, .ampersand) {
-			currentTokenIndex += 2
+		while match(.ampersand, .ampersand) {
 			let right = try parseBitwiseOr()
 			expression = Binary(left: expression, right: right, operator: .logicAnd)
 		}
@@ -286,7 +284,7 @@ public final class Parser {
 
 	private func parseBitwiseXor() throws -> Expression {
 		var expression = try parseBitwiseAnd()
-		while match(type: .caret) {
+		while match(.caret) {
 			let right = try parseBitwiseAnd()
 			expression = Binary(left: expression, right: right, operator: .bitwiseXor)
 		}
@@ -306,12 +304,10 @@ public final class Parser {
 	private func parseEquality() throws -> Expression {
 		var expression = try parseComparison()
 		while true {
-			if willMatch(.equal, .equal) {
-				currentTokenIndex += 2
+			if match(.equal, .equal) {
 				let right = try parseComparison()
 				expression = Binary(left: expression, right: right, operator: .equal)
-			} else if willMatch(.bang, .equal) {
-				currentTokenIndex += 2
+			} else if match(.bang, .equal) {
 				let right = try parseComparison()
 				expression = Binary(left: expression, right: right, operator: .notEqual)
 			} else {
@@ -324,12 +320,10 @@ public final class Parser {
 	private func parseComparison() throws -> Expression {
 		var expression = try parseBitwiseShift()
 		while true {
-			if willMatch(.greaterThan, .equal) {
-				currentTokenIndex += 2
+			if match(.greaterThan, .equal) {
 				let right = try parseBitwiseShift()
 				expression = Binary(left: expression, right: right, operator: .greaterThanOrEqual)
-			} else if willMatch(.lessThan, .equal) {
-				currentTokenIndex += 2
+			} else if match(.lessThan, .equal) {
 				let right = try parseBitwiseShift()
 				expression = Binary(left: expression, right: right, operator: .lessThanOrEqual)
 			} else if willMatch(.greaterThan) && !willMatch(.greaterThan, .greaterThan) {
@@ -348,14 +342,26 @@ public final class Parser {
 	}
 
 	private func parseBitwiseShift() throws -> Expression {
+		var expression = try parseTerm()
+		while true {
+			if match(.lessThan, .lessThan) {
+				let right = try parseTerm()
+				expression = Binary(left: expression, right: right, operator: .leftShift)
+			} else if match(.greaterThan, .greaterThan) {
+				let right = try parseTerm()
+				expression = Binary(left: expression, right: right, operator: .rightShift)
+			} else {
+				break
+			}
+		}
+		return expression
+	}
+
+	private func parseTerm() throws -> Expression {
 		fatalError("unimplemented")
 	}
 
-	private func parseBinaryTerm() throws -> Expression {
-		fatalError("unimplemented")
-	}
-
-	private func parseBinaryFactor() throws -> Expression {
+	private func parseFactor() throws -> Expression {
 		fatalError("unimplemented")
 	}
 
@@ -391,20 +397,27 @@ public final class Parser {
 		return tokens[currentTokenIndex - 1]
 	}
 
-	@discardableResult
-	private func match(type: TokenType) -> Bool {
-		guard !isAtEnd else { return false }
-		if tokens[currentTokenIndex].type == type {
-			currentTokenIndex += 1
-			return true
-		} else {
-			return false
-		}
+	// MARK: - Match one more token types if possible
+
+	private func match(_ types: TokenType...) -> Bool {
+		match(types)
 	}
+
+	private func match(_ types: [TokenType]) -> Bool {
+		guard willMatch(types) else { return false }
+		currentTokenIndex += types.count
+		return true
+	}
+
+	// MARK: - Check if matching will work on one or more token types
 
 	/// Returns true if the next several tokens will match the provided sequence of token types. This function
 	/// does not advance the current token index.
 	private func willMatch(_ types: TokenType...) -> Bool {
+		willMatch(types)
+	}
+
+	private func willMatch(_ types: [TokenType]) -> Bool {
 		for (type, offset) in zip(types, 0...) {
 			let index = currentTokenIndex + offset
 			guard index < tokens.count else { return false }
@@ -413,9 +426,11 @@ public final class Parser {
 		return true
 	}
 
+	// MARK: - Consume tokens or fail
+
 	@discardableResult
 	private func consume(type: TokenType, message: String) throws -> Token {
-		guard match(type: type) else {
+		guard match(type) else {
 			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: message)
 		}
 		return previousToken
