@@ -311,6 +311,40 @@ func doSomething() {
 		XCTAssertEqual(sourceFile, expected)
 	}
 
+	func testBreakStatement() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+func doSomething() {
+	while true {
+		break
+	}
+}
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = sourceFileWithOneFunction(named: "doSomething", statements: [
+			.while(WhileStatement(
+				condition: .boolLiteral(true),
+				body: [
+					.break(BreakStatement())
+				]
+			))
+		])
+		XCTAssertEqual(sourceFile, expected)
+	}
+
+	func testBreakStatementThrowsErrorIfNotInLoop() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+func doSomething() {
+   break
+}
+"""
+		let errors = try XCTUnwrap(parser.parse(fileContents: contents).failure()).map(\.value)
+		XCTAssertEqual(errors, [
+			.unexpectedToken(.keywordBreak, lexeme: "break", message: Optional("The 'break' keyword may only be used inside of a loop"))
+		])
+	}
+
 	// MARK: - Errors
 
 	func testFuncInStructDeclarationThrowsError() throws {
