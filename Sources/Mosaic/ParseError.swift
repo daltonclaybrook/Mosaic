@@ -6,7 +6,7 @@ public enum ParseError: Error, Equatable {
 	/// A number literal is invalid
 	case invalidNumberLiteral(String)
 	/// The parser expected a token that was not found
-	case unexpectedToken(TokenType, lexeme: String, message: String)
+	case unexpectedToken(TokenType, lexeme: String, message: String?)
 	/// The parser encountered the end of file unexpectedly
 	case unexpectedEndOfFile
 	/// The parser encountered an unexpected expression

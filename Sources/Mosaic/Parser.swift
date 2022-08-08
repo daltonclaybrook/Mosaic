@@ -72,6 +72,9 @@ public final class Parser {
 		try consume(type: .leadingBrace, message: "Expected '{' after struct type")
 		var variables: [VariableDeclaration] = []
 		while !match(.trailingBrace) {
+			guard willMatch(.keywordVar) || willMatch(.keywordConst) else {
+				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Struct declarations may only contain variable declarations")
+			}
 			try variables.append(parseVariableDeclaration())
 		}
 		return StructDeclaration(type: type, variables: variables)
@@ -84,7 +87,7 @@ public final class Parser {
 		var methods: [FuncDeclaration] = []
 		while !match(.trailingBrace) {
 			guard willMatch(.keywordFunc) else {
-				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected function declaration or '}'")
+				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Struct implementations (impls) may only contain function declarations")
 			}
 			try methods.append(parseFunctionDeclaration())
 		}
@@ -494,7 +497,7 @@ public final class Parser {
 			try consume(type: .trailingParen, message: "Expected ')' after expression")
 			return .grouping(expression)
 		} else {
-			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected a primary token")
+			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: nil)
 		}
 	}
 
@@ -608,7 +611,7 @@ public final class Parser {
 	private func synchronize() {
 		while !isAtEnd {
 			switch currentToken.type {
-			case .keywordStruct, .keywordImpl, .keywordFunc:
+			case .keywordStruct, .keywordImpl:
 				return
 			default:
 				currentTokenIndex += 1
