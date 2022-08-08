@@ -25,13 +25,13 @@ public indirect enum Expression: Equatable {
 	case binary(Binary)
 	case unary(Unary)
 	case call(Call)
-	case grouping(Grouping)
-	case boolLiteral(BoolLiteral)
-	case nilLiteral(NilLiteral)
-	case integerLiteral(IntegerLiteral)
-	case fixedLiteral(FixedLiteral)
-	case stringLiteral(StringLiteral)
-	case arrayLiteral(ArrayLiteral)
+	case grouping(Expression)
+	case boolLiteral(Bool)
+	case nilLiteral
+	case integerLiteral(Token)
+	case fixedLiteral(Token)
+	case stringLiteral(Token)
+	case arrayLiteral(Token)
 }
 
 /// A dot-delimited list of identifiers representing a getter.
@@ -82,32 +82,4 @@ public struct Unary: Equatable {
 public struct Call: Equatable {
 	public var callable: Getter
 	public var arguments: [Expression]
-}
-
-public struct Grouping: Equatable {
-	public var grouped: Expression
-}
-
-// MARK: - Literals
-
-public struct BoolLiteral: Equatable {
-	public var value: Bool
-}
-
-public struct NilLiteral: Equatable {}
-
-public struct IntegerLiteral: Equatable {
-	public var token: Token
-}
-
-public struct FixedLiteral: Equatable {
-	public var token: Token
-}
-
-public struct StringLiteral: Equatable {
-	public var token: Token
-}
-
-public struct ArrayLiteral: Equatable {
-	public var token: Token
 }

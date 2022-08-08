@@ -460,23 +460,23 @@ public final class Parser {
 		if willMatch(.identifier) || willMatch(.keywordSelf) {
 			return try parseGetter()
 		} else if match(.keywordTrue) {
-			return .boolLiteral(BoolLiteral(value: true))
+			return .boolLiteral(true)
 		} else if match(.keywordFalse) {
-			return .boolLiteral(BoolLiteral(value: false))
+			return .boolLiteral(false)
 		} else if match(.keywordNil) {
-			return .nilLiteral(NilLiteral())
+			return .nilLiteral
 		} else if match(.integerLiteral) {
-			return .integerLiteral(IntegerLiteral(token: previousToken))
+			return .integerLiteral(previousToken)
 		} else if match(.fixedLiteral) {
-			return .fixedLiteral(FixedLiteral(token: previousToken))
+			return .fixedLiteral(previousToken)
 		} else if match(.stringLiteral) {
-			return .stringLiteral(StringLiteral(token: previousToken))
+			return .stringLiteral(previousToken)
 		} else if match(.arrayLiteral) {
-			return .arrayLiteral(ArrayLiteral(token: previousToken))
+			return .arrayLiteral(previousToken)
 		} else if match(.leadingParen) {
 			let expression = try parseExpression()
 			try consume(type: .trailingParen, message: "Expected ')' after expression")
-			return .grouping(Grouping(grouped: expression))
+			return .grouping(expression)
 		} else {
 			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected a primary token")
 		}
