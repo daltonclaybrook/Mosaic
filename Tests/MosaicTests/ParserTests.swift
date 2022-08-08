@@ -6,7 +6,7 @@ final class ParserTests: XCTestCase {
 
 	override func setUp() {
 		super.setUp()
-		lexer = Lexer(overrides: TokenOverrides(line: 0, column: 0, isTerminatedWithNewline: false))
+		lexer = Lexer(overrides: TokenOverrides(line: 0, column: 0))
 	}
 
 	func testEmptyFile() throws {
@@ -58,6 +58,38 @@ func doSomething(foo: UInt8) -> Bool {
 					statements: [
 						.return(.init(value: .boolLiteral(true)))
 					]
+				))
+			],
+			endOfFile: .test(.endOfFile)
+		)
+		XCTAssertEqual(sourceFile, expected)
+	}
+
+	func testSourceLevelVariableDeclarations() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+var foo = 123
+const bar: String = "abc"
+var fizz: UInt8
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = SourceFile(
+			declarations: [
+				.variable(VariableDeclaration(
+					mutability: .variable,
+					nameIdentifier: .test(.identifier, "foo"),
+					initialValue: .integerLiteral(.test(.integerLiteral, "123", true))
+				)),
+				.variable(VariableDeclaration(
+					mutability: .constant,
+					nameIdentifier: .test(.identifier, "bar"),
+					typeIdentifier: .init(nameIdentifier: .test(.identifier, "String")),
+					initialValue: .stringLiteral(.test(.stringLiteral, "\"abc\"", true))
+				)),
+				.variable(VariableDeclaration(
+					mutability: .variable,
+					nameIdentifier: .test(.identifier, "fizz"),
+					typeIdentifier: .init(nameIdentifier: .test(.identifier, "UInt8"))
 				))
 			],
 			endOfFile: .test(.endOfFile)
