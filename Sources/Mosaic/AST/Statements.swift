@@ -5,7 +5,7 @@ public enum Statement: Equatable {
 	case each(EachStatement)
 	case `if`(IfStatement)
 	case `return`(ReturnStatement)
-	case `break`(BreakStatement)
+	case `break`
 	case `while`(WhileStatement)
 	case assignment(Setter)
 }
@@ -35,10 +35,6 @@ public struct IfStatement: Equatable {
 public struct ReturnStatement: Equatable {
 	/// An expression that is evaluated to produce the return value
 	public var value: Expression?
-}
-
-/// A break statement used to exit a loop
-public struct BreakStatement: Equatable {
 }
 
 /// A while loop

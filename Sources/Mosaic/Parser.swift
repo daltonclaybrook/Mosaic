@@ -196,7 +196,7 @@ public final class Parser {
 			guard context.isInLoop else {
 				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "The 'break' keyword may only be used inside of a loop")
 			}
-			return try .break(parseBreakStatement())
+			return try parseBreakStatement()
 		default:
 			return try parseAssignmentOrExpressionStatement()
 		}
@@ -255,10 +255,10 @@ public final class Parser {
 		)
 	}
 
-	private func parseBreakStatement() throws -> BreakStatement {
+	private func parseBreakStatement() throws -> Statement {
 		try consume(type: .keywordBreak, message: "Expected 'break' keyword")
 		try verifyStatementEnd()
-		return BreakStatement()
+		return .break
 	}
 
 	private func parseAssignmentOrExpressionStatement() throws -> Statement {

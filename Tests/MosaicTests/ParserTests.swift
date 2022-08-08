@@ -325,7 +325,7 @@ func doSomething() {
 			.while(WhileStatement(
 				condition: .boolLiteral(true),
 				body: [
-					.break(BreakStatement())
+					.break
 				]
 			))
 		])
