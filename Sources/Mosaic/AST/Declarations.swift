@@ -1,5 +1,5 @@
 /// A single Mosaic source file, which may be one file among many that comprise the program
-public struct SourceFile {
+public struct SourceFile: Equatable {
 	/// A sequential list of declarations in the source file
 	public var declarations: [InSourceDeclaration]
 	/// The end-of-file token
@@ -7,27 +7,27 @@ public struct SourceFile {
 }
 
 /// A declaration that can appear at the top level in a source file
-public enum InSourceDeclaration {
+public enum InSourceDeclaration: Equatable {
 	case structure(StructDeclaration)
 	case function(FuncDeclaration)
 	case variable(VariableDeclaration)
 }
 
 /// A struct declaration, which is a named collection of variables.
-public struct StructDeclaration {
+public struct StructDeclaration: Equatable {
 	public var type: TypeIdentifier
 	public var variables: [VariableDeclaration]
 }
 
 /// An implementation of a struct, which is a collection of methods
-public struct ImplDeclaration {
+public struct ImplDeclaration: Equatable {
 	/// The list of method declarations contained within this implementation body
 	public var methods: [FuncDeclaration]
 }
 
 /// A function declaration, which is a collection of statements
-public struct FuncDeclaration {
-	public struct Parameter {
+public struct FuncDeclaration: Equatable {
+	public struct Parameter: Equatable {
 		public var name: Token
 		public var type: TypeIdentifier
 	}
@@ -43,8 +43,8 @@ public struct FuncDeclaration {
 }
 
 /// A named variable declaration
-public struct VariableDeclaration {
-	public enum Mutability {
+public struct VariableDeclaration: Equatable {
+	public enum Mutability: Equatable {
 		case constant, variable
 	}
 
@@ -60,7 +60,7 @@ public struct VariableDeclaration {
 
 /// A type identifier is used when annotating the type of a variable or function parameter,
 /// Or when declaring a new type.
-public struct TypeIdentifier {
+public struct TypeIdentifier: Equatable {
 	/// The base name of the type
 	public var nameIdentifier: Token
 }

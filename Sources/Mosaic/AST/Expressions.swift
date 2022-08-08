@@ -20,18 +20,30 @@
 //				| getter ;
 //getter          → ( "self" | identifier ) ( "." identifier )*
 
-public protocol Expression {}
+public indirect enum Expression: Equatable {
+	case getter(Getter)
+	case binary(Binary)
+	case unary(Unary)
+	case call(Call)
+	case grouping(Grouping)
+	case boolLiteral(BoolLiteral)
+	case nilLiteral(NilLiteral)
+	case integerLiteral(IntegerLiteral)
+	case fixedLiteral(FixedLiteral)
+	case stringLiteral(StringLiteral)
+	case arrayLiteral(ArrayLiteral)
+}
 
 /// A dot-delimited list of identifiers representing a getter.
-public struct Getter: Expression {
+public struct Getter: Equatable {
 	/// If `self` is used in the getter, this field is non-nil
 	public var selfToken: Token?
 	/// The list of dot-delimited identifiers
 	public var identifiers: [Identifier]
 }
 
-public struct Binary: Expression {
-	public enum Operator {
+public struct Binary: Equatable {
+	public enum Operator: Equatable {
 		case logicOr
 		case logicAnd
 		case bitwiseOr
@@ -57,8 +69,8 @@ public struct Binary: Expression {
 	public var `operator`: Operator
 }
 
-public struct Unary: Expression {
-	public enum Operator {
+public struct Unary: Equatable {
+	public enum Operator: Equatable {
 		case not
 		case negate
 	}
@@ -67,35 +79,35 @@ public struct Unary: Expression {
 	public var `operator`: Operator
 }
 
-public struct Call: Expression {
+public struct Call: Equatable {
 	public var callable: Getter
 	public var arguments: [Expression]
 }
 
-public struct Grouping: Expression {
+public struct Grouping: Equatable {
 	public var grouped: Expression
 }
 
 // MARK: - Literals
 
-public struct BoolLiteral: Expression {
+public struct BoolLiteral: Equatable {
 	public var value: Bool
 }
 
-public struct NilLiteral: Expression {}
+public struct NilLiteral: Equatable {}
 
-public struct IntegerLiteral: Expression {
+public struct IntegerLiteral: Equatable {
 	public var token: Token
 }
 
-public struct FixedLiteral: Expression {
+public struct FixedLiteral: Equatable {
 	public var token: Token
 }
 
-public struct StringLiteral: Expression {
+public struct StringLiteral: Equatable {
 	public var token: Token
 }
 
-public struct ArrayLiteral: Expression {
+public struct ArrayLiteral: Equatable {
 	public var token: Token
 }

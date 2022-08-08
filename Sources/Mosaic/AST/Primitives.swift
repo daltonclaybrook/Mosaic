@@ -15,7 +15,7 @@ public struct Literal {
 }
 
 /// A simple identifier
-public struct Identifier {
+public struct Identifier: Equatable {
 	/// The token of the identifier
 	var token: Token
 }

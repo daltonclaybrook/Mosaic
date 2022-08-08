@@ -238,7 +238,7 @@ public final class Parser {
 		let expression = try parseExpression()
 		if willMatch(.equal) && !willMatch(.equal, .equal) {
 			currentTokenIndex += 1
-			guard let getter = expression as? Getter else {
+			guard case .getter(let getter) = expression else {
 				throw ParseError.invalidAssignmentTarget(message: "The expression that preceded the assignment operator was not a valid assignment target.")
 			}
 			let value = try parseExpression()
@@ -258,7 +258,9 @@ public final class Parser {
 		var expression = try parseLogicAnd()
 		while match(.pipe, .pipe) {
 			let right = try parseLogicAnd()
-			expression = Binary(left: expression, right: right, operator: .logicOr)
+			expression = .binary(
+				Binary(left: expression, right: right, operator: .logicOr)
+			)
 		}
 		return expression
 	}
@@ -267,7 +269,9 @@ public final class Parser {
 		var expression = try parseBitwiseOr()
 		while match(.ampersand, .ampersand) {
 			let right = try parseBitwiseOr()
-			expression = Binary(left: expression, right: right, operator: .logicAnd)
+			expression = .binary(
+				Binary(left: expression, right: right, operator: .logicAnd)
+			)
 		}
 		return expression
 	}
@@ -277,7 +281,9 @@ public final class Parser {
 		while willMatch(.pipe) && !willMatch(.pipe, .pipe) {
 			currentTokenIndex += 1
 			let right = try parseBitwiseXor()
-			expression = Binary(left: expression, right: right, operator: .bitwiseOr)
+			expression = .binary(
+				Binary(left: expression, right: right, operator: .bitwiseOr)
+			)
 		}
 		return expression
 	}
@@ -286,7 +292,9 @@ public final class Parser {
 		var expression = try parseBitwiseAnd()
 		while match(.caret) {
 			let right = try parseBitwiseAnd()
-			expression = Binary(left: expression, right: right, operator: .bitwiseXor)
+			expression = .binary(
+				Binary(left: expression, right: right, operator: .bitwiseXor)
+			)
 		}
 		return expression
 	}
@@ -296,7 +304,9 @@ public final class Parser {
 		while willMatch(.ampersand) && !willMatch(.ampersand, .ampersand) {
 			currentTokenIndex += 1
 			let right = try parseEquality()
-			expression = Binary(left: expression, right: right, operator: .bitwiseAnd)
+			expression = .binary(
+				Binary(left: expression, right: right, operator: .bitwiseAnd)
+			)
 		}
 		return expression
 	}
@@ -306,10 +316,14 @@ public final class Parser {
 		while true {
 			if match(.equal, .equal) {
 				let right = try parseComparison()
-				expression = Binary(left: expression, right: right, operator: .equal)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .equal)
+				)
 			} else if match(.bang, .equal) {
 				let right = try parseComparison()
-				expression = Binary(left: expression, right: right, operator: .notEqual)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .notEqual)
+				)
 			} else {
 				break
 			}
@@ -322,18 +336,26 @@ public final class Parser {
 		while true {
 			if match(.greaterThan, .equal) {
 				let right = try parseBitwiseShift()
-				expression = Binary(left: expression, right: right, operator: .greaterThanOrEqual)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .greaterThanOrEqual)
+				)
 			} else if match(.lessThan, .equal) {
 				let right = try parseBitwiseShift()
-				expression = Binary(left: expression, right: right, operator: .lessThanOrEqual)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .lessThanOrEqual)
+				)
 			} else if willMatch(.greaterThan) && !willMatch(.greaterThan, .greaterThan) {
 				currentTokenIndex += 1
 				let right = try parseBitwiseShift()
-				expression = Binary(left: expression, right: right, operator: .greaterThan)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .greaterThan)
+				)
 			} else if willMatch(.lessThan) && !willMatch(.lessThan, .lessThan) {
 				currentTokenIndex += 1
 				let right = try parseBitwiseShift()
-				expression = Binary(left: expression, right: right, operator: .lessThan)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .lessThan)
+				)
 			} else {
 				break
 			}
@@ -346,10 +368,14 @@ public final class Parser {
 		while true {
 			if match(.lessThan, .lessThan) {
 				let right = try parseTerm()
-				expression = Binary(left: expression, right: right, operator: .leftShift)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .leftShift)
+				)
 			} else if match(.greaterThan, .greaterThan) {
 				let right = try parseTerm()
-				expression = Binary(left: expression, right: right, operator: .rightShift)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .rightShift)
+				)
 			} else {
 				break
 			}
@@ -362,10 +388,14 @@ public final class Parser {
 		while true {
 			if match(.minus) {
 				let right = try parseFactor()
-				expression = Binary(left: expression, right: right, operator: .minus)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .minus)
+				)
 			} else if match(.plus) {
 				let right = try parseFactor()
-				expression = Binary(left: expression, right: right, operator: .plus)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .plus)
+				)
 			} else {
 				break
 			}
@@ -378,13 +408,19 @@ public final class Parser {
 		while true {
 			if match(.slash) {
 				let right = try parseUnary()
-				expression = Binary(left: expression, right: right, operator: .divide)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .divide)
+				)
 			} else if match(.star) {
 				let right = try parseUnary()
-				expression = Binary(left: expression, right: right, operator: .multiply)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .multiply)
+				)
 			} else if match(.percent) {
 				let right = try parseUnary()
-				expression = Binary(left: expression, right: right, operator: .remainder)
+				expression = .binary(
+					Binary(left: expression, right: right, operator: .remainder)
+				)
 			} else {
 				break
 			}
@@ -395,10 +431,10 @@ public final class Parser {
 	private func parseUnary() throws -> Expression {
 		if match(.bang) {
 			let operand = try parseCall()
-			return Unary(expression: operand, operator: .negate)
+			return .unary(Unary(expression: operand, operator: .negate))
 		} else if match(.minus) {
 			let operand = try parseCall()
-			return Unary(expression: operand, operator: .not)
+			return .unary(Unary(expression: operand, operator: .not))
 		} else {
 			return try parseCall()
 		}
@@ -406,7 +442,7 @@ public final class Parser {
 
 	private func parseCall() throws -> Expression {
 		let primary = try parsePrimary()
-		if let getter = primary as? Getter, match(.leadingParen) {
+		if case .getter(let getter) = primary, match(.leadingParen) {
 			var arguments: [Expression] = []
 			while !match(.trailingParen) {
 				arguments.append(try parseExpression())
@@ -414,7 +450,7 @@ public final class Parser {
 					try consume(type: .comma, message: "Expected ',' or ')' after call argument")
 				}
 			}
-			return Call(callable: getter, arguments: arguments)
+			return .call(Call(callable: getter, arguments: arguments))
 		} else {
 			return primary
 		}
@@ -424,23 +460,23 @@ public final class Parser {
 		if willMatch(.identifier) || willMatch(.keywordSelf) {
 			return try parseGetter()
 		} else if match(.keywordTrue) {
-			return BoolLiteral(value: true)
+			return .boolLiteral(BoolLiteral(value: true))
 		} else if match(.keywordFalse) {
-			return BoolLiteral(value: false)
+			return .boolLiteral(BoolLiteral(value: false))
 		} else if match(.keywordNil) {
-			return NilLiteral()
+			return .nilLiteral(NilLiteral())
 		} else if match(.integerLiteral) {
-			return IntegerLiteral(token: previousToken)
+			return .integerLiteral(IntegerLiteral(token: previousToken))
 		} else if match(.fixedLiteral) {
-			return FixedLiteral(token: previousToken)
+			return .fixedLiteral(FixedLiteral(token: previousToken))
 		} else if match(.stringLiteral) {
-			return StringLiteral(token: previousToken)
+			return .stringLiteral(StringLiteral(token: previousToken))
 		} else if match(.arrayLiteral) {
-			return ArrayLiteral(token: previousToken)
+			return .arrayLiteral(ArrayLiteral(token: previousToken))
 		} else if match(.leadingParen) {
 			let expression = try parseExpression()
 			try consume(type: .trailingParen, message: "Expected ')' after expression")
-			return Grouping(grouped: expression)
+			return .grouping(Grouping(grouped: expression))
 		} else {
 			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected a primary token")
 		}
@@ -461,7 +497,9 @@ public final class Parser {
 			let token = try consume(type: .identifier, message: "Expected identifier after '.'")
 			identifiers.append(Identifier(token: token))
 		}
-		return Getter(selfToken: selfToken, identifiers: identifiers)
+		return .getter(
+			Getter(selfToken: selfToken, identifiers: identifiers)
+		)
 	}
 
 	// MARK: - Private helpers
