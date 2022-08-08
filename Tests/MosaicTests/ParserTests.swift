@@ -96,4 +96,35 @@ var fizz: UInt8
 		)
 		XCTAssertEqual(sourceFile, expected)
 	}
+
+	func testImplDeclaration() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+struct FooBar {}
+impl FooBar {
+	func doStuff() {}
+}
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = SourceFile(
+			declarations: [
+				.structure(StructDeclaration(
+					type: .init(nameIdentifier: .test(.identifier, "FooBar")),
+					variables: []
+				)),
+				.structImpl(ImplDeclaration(
+					type: .init(nameIdentifier: .test(.identifier, "FooBar")),
+					methods: [
+						FuncDeclaration(
+							nameIdentifier: .test(.identifier, "doStuff"),
+							parameters: [],
+							statements: []
+						)
+					]
+				))
+			],
+			endOfFile: .test(.endOfFile)
+		)
+		XCTAssertEqual(sourceFile, expected)
+	}
 }

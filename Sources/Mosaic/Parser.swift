@@ -55,6 +55,8 @@ public final class Parser {
 		switch currentToken.type {
 		case .keywordStruct:
 			return try .structure(parseStructureDeclaration())
+		case .keywordImpl:
+			return try .structImpl(parseStructImpl())
 		case .keywordFunc:
 			return try .function(parseFunctionDeclaration())
 		case .keywordVar, .keywordConst:
@@ -69,10 +71,24 @@ public final class Parser {
 		let type = try parseTypeIdentifier()
 		try consume(type: .leadingBrace, message: "Expected '{' after struct type")
 		var variables: [VariableDeclaration] = []
-		while !isAtEnd && match(.trailingBrace) == false {
+		while !match(.trailingBrace) {
 			try variables.append(parseVariableDeclaration())
 		}
 		return StructDeclaration(type: type, variables: variables)
+	}
+
+	private func parseStructImpl() throws -> ImplDeclaration {
+		try consume(type: .keywordImpl, message: "Expected 'impl' keyword")
+		let type = try parseTypeIdentifier()
+		try consume(type: .leadingBrace, message: "Expected '{' after impl type")
+		var methods: [FuncDeclaration] = []
+		while !match(.trailingBrace) {
+			guard willMatch(.keywordFunc) else {
+				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected function declaration or '}'")
+			}
+			try methods.append(parseFunctionDeclaration())
+		}
+		return ImplDeclaration(type: type, methods: methods)
 	}
 
 	private func parseVariableDeclaration() throws -> VariableDeclaration {

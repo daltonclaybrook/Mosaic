@@ -9,6 +9,7 @@ public struct SourceFile: Equatable {
 /// A declaration that can appear at the top level in a source file
 public enum InSourceDeclaration: Equatable {
 	case structure(StructDeclaration)
+	case structImpl(ImplDeclaration)
 	case function(FuncDeclaration)
 	case variable(VariableDeclaration)
 }
@@ -21,6 +22,7 @@ public struct StructDeclaration: Equatable {
 
 /// An implementation of a struct, which is a collection of methods
 public struct ImplDeclaration: Equatable {
+	public var type: TypeIdentifier
 	/// The list of method declarations contained within this implementation body
 	public var methods: [FuncDeclaration]
 }
