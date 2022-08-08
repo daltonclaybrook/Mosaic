@@ -152,8 +152,8 @@ public final class Parser {
 			returnType = try parseTypeIdentifier()
 		}
 
-		var loopContext = LoopParseContext()
-		let statements = try parseStatementsBlock(loopContext: &loopContext)
+		var context = ParseContext()
+		let statements = try parseStatementsBlock(context: &context)
 
 		return FuncDeclaration(
 			nameIdentifier: name,
@@ -170,30 +170,30 @@ public final class Parser {
 		return FuncDeclaration.Parameter(name: name, type: type)
 	}
 
-	private func parseStatementsBlock(loopContext: inout LoopParseContext) throws -> [Statement] {
+	private func parseStatementsBlock(context: inout ParseContext) throws -> [Statement] {
 		try consume(type: .leadingBrace, message: "Expected '{' token")
 		var statements: [Statement] = []
 		while !isAtEnd && !willMatch(.trailingBrace) {
-			try statements.append(parseStatement(loopContext: &loopContext))
+			try statements.append(parseStatement(context: &context))
 		}
 		try consume(type: .trailingBrace, message: "Expected '}' to close block")
 		return statements
 	}
 
-	private func parseStatement(loopContext: inout LoopParseContext) throws -> Statement {
+	private func parseStatement(context: inout ParseContext) throws -> Statement {
 		switch currentToken.type {
 		case .keywordVar, .keywordConst:
 			return try .variable(parseVariableDeclaration())
 		case .keywordEach:
-			return try .each(parseEachStatement(loopContext: &loopContext))
+			return try .each(parseEachStatement(context: &context))
 		case .keywordWhile:
-			return try .`while`(parseWhileStatement(loopContext: &loopContext))
+			return try .`while`(parseWhileStatement(context: &context))
 		case .keywordIf:
-			return try .`if`(parseIfStatement(loopContext: &loopContext))
+			return try .`if`(parseIfStatement(context: &context))
 		case .keywordReturn:
 			return try .return(parseReturnStatement())
 		case .keywordBreak:
-			guard loopContext.isInLoop else {
+			guard context.isInLoop else {
 				throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "The 'break' keyword may only be used inside of a loop")
 			}
 			return try .break(parseBreakStatement())
@@ -202,13 +202,13 @@ public final class Parser {
 		}
 	}
 
-	private func parseEachStatement(loopContext: inout LoopParseContext) throws -> EachStatement {
+	private func parseEachStatement(context: inout ParseContext) throws -> EachStatement {
 		try consume(type: .keywordEach, message: "Expected 'each' keyword")
 		let element = try consume(type: .identifier, message: "Expected element name identifier")
 		try consume(type: .keywordIn, message: "Expected 'in' keyword after element name")
 		let collection = try parseExpression()
-		let statements = try loopContext.nestLoop { context in
-			try parseStatementsBlock(loopContext: &context)
+		let statements = try context.nestLoop { context in
+			try parseStatementsBlock(context: &context)
 		}
 		return EachStatement(
 			element: element,
@@ -217,11 +217,11 @@ public final class Parser {
 		)
 	}
 
-	private func parseWhileStatement(loopContext: inout LoopParseContext) throws -> WhileStatement {
+	private func parseWhileStatement(context: inout ParseContext) throws -> WhileStatement {
 		try consume(type: .keywordWhile, message: "Expected 'while' keyword")
 		let condition = try parseExpression()
-		let statements = try loopContext.nestLoop { context in
-			try parseStatementsBlock(loopContext: &context)
+		let statements = try context.nestLoop { context in
+			try parseStatementsBlock(context: &context)
 		}
 		return WhileStatement(
 			condition: condition,
@@ -229,14 +229,14 @@ public final class Parser {
 		)
 	}
 
-	private func parseIfStatement(loopContext: inout LoopParseContext) throws -> IfStatement {
+	private func parseIfStatement(context: inout ParseContext) throws -> IfStatement {
 		try consume(type: .keywordIf, message: "Expected 'if' keyword")
 		let condition = try parseExpression()
-		let thenStatements = try parseStatementsBlock(loopContext: &loopContext)
+		let thenStatements = try parseStatementsBlock(context: &context)
 
 		var elseStatements: [Statement]?
 		if match(.keywordElse) {
-			elseStatements = try parseStatementsBlock(loopContext: &loopContext)
+			elseStatements = try parseStatementsBlock(context: &context)
 		}
 
 		return IfStatement(
