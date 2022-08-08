@@ -213,6 +213,104 @@ func doSomething() {
 		XCTAssertEqual(sourceFile, expected)
 	}
 
+	func testWhileLoop() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+func doSomething() {
+	while foo <= 10 {
+		print(foo)
+	}
+}
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = sourceFileWithOneFunction(named: "doSomething", statements: [
+			.while(WhileStatement(
+				condition: .binary(Binary(
+					left: .getter(Getter(
+						identifiers: [
+							.init(token: .test(.identifier, "foo"))
+						]
+					)),
+					right: .integerLiteral(.test(.integerLiteral, "10")),
+					operator: .lessThanOrEqual
+				)),
+				body: [
+					.expression(
+						.call(Call(
+							callable: .init(
+								identifiers: [.init(token: .test(.identifier, "print"))]
+							),
+							arguments: [
+								.getter(Getter(
+									identifiers: [
+										.init(token: .test(.identifier, "foo"))
+									]
+								))
+							]
+						))
+					)
+				]
+			))
+		])
+		XCTAssertEqual(sourceFile, expected)
+	}
+
+	func testIfStatement() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+func doSomething() {
+	if true {
+		foo = 12
+	}
+}
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = sourceFileWithOneFunction(named: "doSomething", statements: [
+			.if(IfStatement(
+				condition: .boolLiteral(true),
+				thenBranch: [
+					.assignment(Setter(
+						getter: Getter(identifiers: [
+							.init(token: .test(.identifier, "foo"))
+						]),
+						value: .integerLiteral(.test(.integerLiteral, "12", true))
+					))
+				]
+			))
+		])
+		XCTAssertEqual(sourceFile, expected)
+	}
+
+	func testIfElseStatement() throws {
+		let parser = Parser(lexer: lexer)
+		let contents = """
+func doSomething() {
+	if true {
+		return 12
+	} else {
+		return 13
+	}
+}
+"""
+		let sourceFile = try XCTUnwrap(parser.parse(fileContents: contents).get())
+		let expected = sourceFileWithOneFunction(named: "doSomething", statements: [
+			.if(IfStatement(
+				condition: .boolLiteral(true),
+				thenBranch: [
+					.return(ReturnStatement(
+						value: .integerLiteral(.test(.integerLiteral, "12", true))
+					))
+				],
+				elseBranch: [
+					.return(ReturnStatement(
+						value: .integerLiteral(.test(.integerLiteral, "13", true))
+					))
+				]
+			))
+		])
+		XCTAssertEqual(sourceFile, expected)
+	}
+
 	// MARK: - Errors
 
 	func testFuncInStructDeclarationThrowsError() throws {
