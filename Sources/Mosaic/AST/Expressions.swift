@@ -67,4 +67,35 @@ public struct Unary: Expression {
 	public var `operator`: Operator
 }
 
-public struct Primary: Expression {}
+public struct Call: Expression {
+	public var callable: Getter
+	public var arguments: [Expression]
+}
+
+public struct Grouping: Expression {
+	public var grouped: Expression
+}
+
+// MARK: - Literals
+
+public struct BoolLiteral: Expression {
+	public var value: Bool
+}
+
+public struct NilLiteral: Expression {}
+
+public struct IntegerLiteral: Expression {
+	public var token: Token
+}
+
+public struct FixedLiteral: Expression {
+	public var token: Token
+}
+
+public struct StringLiteral: Expression {
+	public var token: Token
+}
+
+public struct ArrayLiteral: Expression {
+	public var token: Token
+}

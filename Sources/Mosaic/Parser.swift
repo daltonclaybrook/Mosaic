@@ -358,27 +358,110 @@ public final class Parser {
 	}
 
 	private func parseTerm() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseFactor()
+		while true {
+			if match(.minus) {
+				let right = try parseFactor()
+				expression = Binary(left: expression, right: right, operator: .minus)
+			} else if match(.plus) {
+				let right = try parseFactor()
+				expression = Binary(left: expression, right: right, operator: .plus)
+			} else {
+				break
+			}
+		}
+		return expression
 	}
 
 	private func parseFactor() throws -> Expression {
-		fatalError("unimplemented")
+		var expression = try parseUnary()
+		while true {
+			if match(.slash) {
+				let right = try parseUnary()
+				expression = Binary(left: expression, right: right, operator: .divide)
+			} else if match(.star) {
+				let right = try parseUnary()
+				expression = Binary(left: expression, right: right, operator: .multiply)
+			} else if match(.percent) {
+				let right = try parseUnary()
+				expression = Binary(left: expression, right: right, operator: .remainder)
+			} else {
+				break
+			}
+		}
+		return expression
 	}
 
 	private func parseUnary() throws -> Expression {
-		fatalError("unimplemented")
+		if match(.bang) {
+			let operand = try parseCall()
+			return Unary(expression: operand, operator: .negate)
+		} else if match(.minus) {
+			let operand = try parseCall()
+			return Unary(expression: operand, operator: .not)
+		} else {
+			return try parseCall()
+		}
 	}
 
 	private func parseCall() throws -> Expression {
-		fatalError("unimplemented")
+		let primary = try parsePrimary()
+		if let getter = primary as? Getter, match(.leadingParen) {
+			var arguments: [Expression] = []
+			while !match(.trailingParen) {
+				arguments.append(try parseExpression())
+				if !willMatch(.trailingParen) {
+					try consume(type: .comma, message: "Expected ',' or ')' after call argument")
+				}
+			}
+			return Call(callable: getter, arguments: arguments)
+		} else {
+			return primary
+		}
 	}
 
 	private func parsePrimary() throws -> Expression {
-		fatalError("unimplemented")
+		if willMatch(.identifier) || willMatch(.keywordSelf) {
+			return try parseGetter()
+		} else if match(.keywordTrue) {
+			return BoolLiteral(value: true)
+		} else if match(.keywordFalse) {
+			return BoolLiteral(value: false)
+		} else if match(.keywordNil) {
+			return NilLiteral()
+		} else if match(.integerLiteral) {
+			return IntegerLiteral(token: previousToken)
+		} else if match(.fixedLiteral) {
+			return FixedLiteral(token: previousToken)
+		} else if match(.stringLiteral) {
+			return StringLiteral(token: previousToken)
+		} else if match(.arrayLiteral) {
+			return ArrayLiteral(token: previousToken)
+		} else if match(.leadingParen) {
+			let expression = try parseExpression()
+			try consume(type: .trailingParen, message: "Expected ')' after expression")
+			return Grouping(grouped: expression)
+		} else {
+			throw ParseError.unexpectedToken(currentToken.type, lexeme: currentToken.lexeme, message: "Expected a primary token")
+		}
 	}
 
 	private func parseGetter() throws -> Expression {
-		fatalError("unimplemented")
+		var selfToken: Token? = nil
+		var identifiers: [Identifier] = []
+
+		if match(.keywordSelf) {
+			selfToken = previousToken
+		} else {
+			let token = try consume(type: .identifier, message: "Expected identifier")
+			identifiers.append(Identifier(token: token))
+		}
+
+		while match(.dot) {
+			let token = try consume(type: .identifier, message: "Expected identifier after '.'")
+			identifiers.append(Identifier(token: token))
+		}
+		return Getter(selfToken: selfToken, identifiers: identifiers)
 	}
 
 	// MARK: - Private helpers
