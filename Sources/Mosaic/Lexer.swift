@@ -10,14 +10,29 @@ public protocol LexerType {
 	func scanAllTokens(fileContents: String) -> LexerResults
 }
 
+/// Used to override certain fields that are set on Tokens for testing purposes
+struct TokenOverrides {
+	var line: Int?
+	var column: Int?
+	var isTerminatedWithNewline: Bool?
+}
+
 public final class Lexer: LexerType {
 	private var scannedTokens: [Token] = []
 	private var errors: [Located<ParseError>] = []
 
 	private var currentLexemeLine = 0
 	private var currentLexemeColumn = 0
+	private let overrides: TokenOverrides?
 
-	public init() {}
+	public init() {
+		self.overrides = nil
+	}
+
+	/// Used for testing
+	init(overrides: TokenOverrides) {
+		self.overrides = overrides
+	}
 
 	/// Load a Mosaic source file from the provided `fileURL`, scan it, and return a list of tokens
 	public func scanAllTokens(fileURL: URL) throws -> LexerResults {
@@ -54,11 +69,11 @@ public final class Lexer: LexerType {
 		scannedTokens.append(
 			Token(
 				type: type,
-				line: currentLexemeLine,
-				column: currentLexemeColumn,
+				line: overrides?.line ?? currentLexemeLine,
+				column: overrides?.column ?? currentLexemeColumn,
 				lexeme: lexeme.description,
 				// This field will be updated in another place
-				isTerminatedWithNewline: false
+				isTerminatedWithNewline: overrides?.isTerminatedWithNewline ?? false
 			)
 		)
 	}
@@ -66,7 +81,7 @@ public final class Lexer: LexerType {
 	/// Update the previously scanned token to indicate that a newline occurs after it
 	private func updatePreviousTokenWithNewline() {
 		guard !scannedTokens.isEmpty else { return }
-		scannedTokens[scannedTokens.count - 1].isTerminatedWithNewline = true
+		scannedTokens[scannedTokens.count - 1].isTerminatedWithNewline = overrides?.isTerminatedWithNewline ?? true
 	}
 
 	/// Convenience function for generating an error at the current scan location
